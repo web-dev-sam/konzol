@@ -1,0 +1,91 @@
+// Basic text
+Hello world
+
+// Simple variables
+{name}
+{age}
+{user}
+
+// Dot notation paths
+{user.name}
+{user.profile.email}
+{data.items.0.title}
+{a.b.c.d.e}
+
+// Numeric identifiers (array indices)
+{users.0}
+{items.123}
+{data.0.1.2}
+
+// Wildcards in paths
+{data.*}
+{users.*.name}
+{items.*.0.title}
+
+// Literals at top level
+[Hello world]
+[{literal brace}]
+[Anything can go here!@#$%^&*()]
+[]
+
+// Literals in variable paths
+{var[A]}
+{user[.]name}
+{data[0].prop}
+{a[b]c[d]e}
+{prefix[middle]suffix.prop}
+
+// Nested variables in paths
+{data.{index}}
+{users.{userId}.profile}
+{items.*.{dynamicProp}}
+{a.{b.c}.d}
+
+// Complex nested paths
+{varA.varB.*.{varA:a}}
+{data.{index:0}.{field:[name]}}
+
+// Simple modifiers
+{name:capitalize}
+{age:.2}
+{value:>8}
+
+// Multiple function modifiers
+{name:capitalize|upper}
+{value:.2|>8}
+{text:trim|capitalize|center}
+
+// Explicit function modifiers
+{value:(capitalize)}
+{data:(>8)}
+{text:(trim)|(capitalize)}
+
+// Mixed explicit and implicit functions
+{name:capitalize|(upper)|trim}
+{value:.2|(>8)|format}
+
+// Functions with literals
+{search:@[query]}
+{format:center<[padding]>}
+{value:@a[}]}
+
+// Complex modifier combinations
+{data:func1|func2|(func3)|@[search]|>8}
+{name:capitalize|upper|(trim)}
+
+// Everything combined
+Hello {user[.]name:capitalize|trim} is {age:.2} years old!
+{data.{index:[0]}.*.{field:@[name]}:format|(>10)|trim}
+[Literal {with} braces] and {complex.{nested:[path]}.*.value:func1|func2|(func3)}
+
+// Edge cases
+{a}
+{.}
+{*}
+{[]}
+{a[]}
+{[a]}
+{a:}
+{a:||}
+{:a}
+{}
