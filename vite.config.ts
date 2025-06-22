@@ -1,13 +1,18 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import devConsole from './src/plugins/vite-plugin-dev-console'
+import konzol from './src/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     vue(),
-    devConsole({
-      functionName: '$dev'
+    konzol({
+      functionName: 'log'
     })
-  ]
+  ],
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
+  },
 })
