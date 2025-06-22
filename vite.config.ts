@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [
     vue(),
     konzol({
-      functionName: 'log'
+      functionName: 'log!'
     })
   ],
   resolve: {

@@ -14,7 +14,7 @@ const data = ref({
 })
 
 
-log!(data)
+log!("Here: {}", data)
 
 
 

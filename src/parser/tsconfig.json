@@ -1,0 +1,12 @@
+{
+  "files": ["./parser.js"],
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true
+  },
+  "include": [
+    "./parser.js",
+    "./parser.d.ts"
+  ]
+}
