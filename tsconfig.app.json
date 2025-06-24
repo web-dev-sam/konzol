@@ -2,6 +2,7 @@
   "extends": "@vue/tsconfig/tsconfig.dom.json",
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "lib": ["ESNext"],
 
     /* Linting */
     "strict": true,
@@ -19,9 +20,9 @@
     "src/**/*.d.ts",
     "src/**/*.tsx",
     "src/**/*.vue",
-    "dev/**/*.ts",
-    "dev/**/*.d.ts",
-    "dev/**/*.tsx",
-    "dev/**/*.vue"
+    "src/tests/**/*.ts",
+    "src/tests/**/*.d.ts",
+    "src/tests/**/*.tsx",
+    "src/tests/**/*.vue"
   ]
 }

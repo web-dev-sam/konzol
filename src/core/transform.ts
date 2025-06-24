@@ -1,13 +1,20 @@
 import MagicString from "magic-string";
 import type { NodePath } from '@babel/traverse';
 import { parse as babelParse, traverse, types } from '../utils/babel';
+import { SyntaxError as KonzolSyntaxError } from "../parser/parser";
+import { logSyntaxError } from "../utils/utils";
+import { konzolParse } from "../utils/parser";
+import { build } from "./builder";
 
-// import { parse } from "../parser/parser";
 // console.log(parse("Hey {}"))
 
-export function transform(codeToTransform: string, id: string, options: KonzolOptions = {}): { code: string; map: any } | void {
+export function transform(codeToTransform: string, id: string, options: KonzolOptions): { code: string; map: any } | undefined {
   if (!/\.(ts|js|vue)$/.test(id)) {
-    return;
+    return
+  }
+  if (!options) {
+    console.error(`Konzol: Options are not provided for the plugin.`);
+    return
   }
 
   let scriptOffset = 0;
@@ -26,6 +33,7 @@ export function transform(codeToTransform: string, id: string, options: KonzolOp
   });
   const code = new MagicString(codeToTransform);
 
+  const codeSizes: number[] = []
   let hasReplacement = false;
   traverse(ast, {
     CallExpression(path: NodePath<types.CallExpression>) {
@@ -49,33 +57,56 @@ export function transform(codeToTransform: string, id: string, options: KonzolOp
           return;
         }
 
-        const replacedFunc = `() => {
-            console.log("Here: ")
-            console.log(
-              '%c⚡ SYSTEM %c ONLINE %c✓',
-              'background: #2c3e50; color: #ecf0f1; padding: 8px 12px; border-radius: 4px 0 0 4px; font-weight: bold;',
-              'background: #27ae60; color: white; padding: 8px 12px; font-weight: bold;',
-              'background: #27ae60; color: white; padding: 8px 12px; border-radius: 0 4px 4px 0; font-weight: bold;'
-            );
-        }`
+        // const replacedFunc = build(konzolParse())
 
-        code.overwrite(
-          startOffset,
-          endOffset,
-          code
-            .snip(startOffset, endOffset)
-            .replace(expectedFuncName, `;(${replacedFunc})`)
-            .toString()
-        )
-        hasReplacement = true;
+        if (node.arguments.length === 0) {
+          console.warn(`Konzol: Call to "${expectedFuncName}" without arguments at ${id}:${node.loc?.start.line}:${node.loc?.start.column}. Statement is ignored.`);
+          code.overwrite(startOffset, endOffset, `;`)
+          return;
+        }
+
+        if (!types.isStringLiteral(node.arguments[0])) {
+          console.warn(`Konzol: First argument of "${expectedFuncName}" must be a string literal at ${id}:${node.loc?.start.line}:${node.loc?.start.column} (You have to write the string inline instead of using variables or expressions). Statement is ignored.`);
+          code.overwrite(startOffset, endOffset, `;`)
+          return;
+        }
+
+        const format = node.arguments[0].value;
+        try {
+          const formatAST = konzolParse(format)
+          const str = build(formatAST)//, node.arguments.slice(1), code);
+          
+          const finalCode = `;(${str})`
+          codeSizes.push(finalCode.length);
+
+          code.overwrite(
+            startOffset,
+            endOffset,
+            code
+              .snip(startOffset, endOffset)
+              .replaceAll(expectedFuncName, finalCode)
+              .toString()
+          )
+          hasReplacement = true;
+        } catch (e) {
+          if (e instanceof KonzolSyntaxError) {
+            logSyntaxError(e, id, format);
+            return;
+          }
+          throw e;
+        }
       }
     }
   });
   if (!hasReplacement) return;
 
+  // 4518 (Before global vars)
+  console.info(`Konzol: Temporarily injected code size: ${codeSizes.reduce((a,b)=>a+b,0)} characters`);
+
   return {
     code: code.toString(),
-    map: code.generateMap({ hires: true })
+    // Source maps for now disabled to make debugging easier
+    // map: code.generateMap({ hires: true })
+    map: null 
   };
 }
-

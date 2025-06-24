@@ -1,3 +1,5 @@
+import { SyntaxError as KonzolSyntaxError } from '../parser/parser'
+
 export function unproxify(obj: unknown): any {
   if (obj == null) return
   if (typeof obj === 'object' && "_rawValue" in obj) {
@@ -52,4 +54,26 @@ export function unproxify(obj: unknown): any {
   const result = cloneWithoutProxy(obj);
   result._original = obj;
   return result
+}
+
+export function logSyntaxError(error: KonzolSyntaxError, id: string, code: string): void {
+  const { message, location } = error;
+  const { start } = location;
+
+  const lines = code.split('\n');
+  const errorLine = lines[start.line - 1] || '';
+  const pointer = ' '.repeat(start.column - 1) + '^';
+  
+  logRed(`Konzol: Invalid formatter string found in\n    ${id}\n`);
+  logRed(`"${errorLine}"`);
+  logRed(` ${pointer} ${message}\n`);
+}
+
+
+
+export function logRed(...args: any[]): void {
+  const RED = '\x1b[31m';
+  const RESET = '\x1b[0m';
+
+  console.log(RED, ...args, RESET);
 }

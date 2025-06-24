@@ -7,7 +7,8 @@ export default defineConfig({
   plugins: [
     vue(),
     konzol({
-      functionName: 'log!'
+      functionName: 'log!',
+      entry: 'src/tests/dev/main.ts',
     })
   ],
   resolve: {
