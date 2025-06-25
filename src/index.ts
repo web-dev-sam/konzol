@@ -1,11 +1,11 @@
 import type { UnpluginFactory } from 'unplugin'
 import { createUnplugin } from 'unplugin'
-import { transform } from './core/transform';
-import { codeSegments } from './macros/find';
+import { transform } from './core/transform'
+import { codeSegments } from './macros/find'
 
-export const unpluginFactory: UnpluginFactory<KonzolOptions> = options => {
+export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
   const virtualModuleId = 'virtual:konzol'
-  const resolvedVirtualModuleId = '\0' + virtualModuleId
+  const resolvedVirtualModuleId = `\0${virtualModuleId}`
 
   return {
     name: 'unplugin-konzol',
@@ -38,7 +38,7 @@ export const unpluginFactory: UnpluginFactory<KonzolOptions> = options => {
         }
       }
       return transform(code, id, options)
-    }
+    },
   }
 }
 

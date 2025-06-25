@@ -1,10 +1,10 @@
-
 type KonzolHelperFunctionNames = 'find' | 'cases'
 
-export const namespace = (name: KonzolHelperFunctionNames, segment: string) => 
-  `globalThis.__kzl_${name} || (globalThis.__kzl_${name}=${segment});`
+export const namespace = (name: KonzolHelperFunctionNames, segment: string) => `globalThis.__kzl_${name} || (globalThis.__kzl_${name}=${segment});`
 
-const findCodeSegment = namespace('find', /*js*/`(obj, patternParts)=>{
+const findCodeSegment = namespace(
+  'find',
+  /*js*/ `(obj, patternParts)=>{
   const results = {};
   
   function traverse(current, currentPath, patternIndex) {
@@ -63,8 +63,11 @@ const findCodeSegment = namespace('find', /*js*/`(obj, patternParts)=>{
   
   traverse(obj, [], 0);
   return results;
-}`)
-const casesCodeSegment = namespace('cases', /*js*/`async(value,logic)=>{
+}`,
+)
+const casesCodeSegment = namespace(
+  'cases',
+  /*js*/ `async(value,logic)=>{
   if(value instanceof Promise)value=await value
   let e=()=>logic.else?.()
   if(value==null)return logic.null?.()??e()
@@ -73,8 +76,8 @@ const casesCodeSegment = namespace('cases', /*js*/`async(value,logic)=>{
   if(value instanceof Set)return logic.set?.()??e()
   if(typeof value==='number')return logic.num?.()??e()
   return e()
-}`)
-
+}`,
+)
 
 export const codeSegments: Record<KonzolHelperFunctionNames, string> = {
   find: findCodeSegment,

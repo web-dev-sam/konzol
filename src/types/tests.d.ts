@@ -1,6 +1,5 @@
-
 declare global {
-  function log(format: string, ...args: any[]): void;
+  function log(format: string, ...args: unknown[]): void
 }
 
 export {}
