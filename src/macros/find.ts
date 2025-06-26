@@ -67,14 +67,14 @@ const findCodeSegment = namespace(
 )
 const casesCodeSegment = namespace(
   'cases',
-  /*js*/ `async(value,logic)=>{
-  if(value instanceof Promise)value=await value
-  let e=()=>logic.else?.()
-  if(value==null)return logic.null?.()??e()
-  if(Array.isArray(value))return logic.arr?.()??e()
-  if(value instanceof Map)return logic.map?.()??e()
-  if(value instanceof Set)return logic.set?.()??e()
-  if(typeof value==='number')return logic.num?.()??e()
+  /*js*/ `async(v,logic)=>{
+  if(v instanceof Promise)v=await v
+  let e=()=>logic.else?.(v)
+  if(v==null)return logic.null?.(v)??e()
+  if(Array.isArray(v))return logic.arr?.(v)??e()
+  if(v instanceof Map)return logic.map?.(v)??e()
+  if(v instanceof Set)return logic.set?.(v)??e()
+  if(typeof v==='number')return logic.num?.(v)??e()
   return e()
 }`,
 )

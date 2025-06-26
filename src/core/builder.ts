@@ -54,65 +54,66 @@ function casesBuilder(checkedVal: string, cases: SafeCasesMap) {
   return (
     `await __kzl_cases(${checkedVal},{` +
     Object.entries(cases)
-      .map(([prim, code]) => `${prim}:async()=>${code}`)
+      .map(([prim, code]) => `${prim}:async(v)=>${code}`)
       .join(',') +
     `})`
   )
 }
 
+// TODO: For caching, easiest way is to use functions with one param that one char long.
 const values = (str: string) =>
   casesBuilder(str, {
-    arr: str,
-    map: `[...${str}.values()]`,
-    set: `[...${str}]`,
+    arr: 'v',
+    map: `[...v.values()]`,
+    set: `[...v]`,
     null: `null`,
-    num: `${str}`,
-    else: `Object.values(${str})`,
+    num: `v`,
+    else: `Object.values(v)`,
   })
 const keys = (str: string) =>
   casesBuilder(str, {
-    arr: `${str}.map((_,i)=>i)`,
-    map: `[...${str}.keys()]`,
-    set: `[...${str}].map((_,i)=>i)`,
+    arr: `v.map((_,i)=>i)`,
+    map: `[...v.keys()]`,
+    set: `[...v].map((_,i)=>i)`,
     null: `null`,
-    num: `${str}`,
-    else: `Object.keys(${str})`,
+    num: `v`,
+    else: `Object.keys(v)`,
   })
 const gt = (str: string, num: string) =>
   casesBuilder(str, {
-    arr: `${str}.filter(e=>e>${num})`,
-    map: `[...${str}.values()].filter(e=>e>${num})`,
-    set: `[...${str}].filter(e=>e>${num})`,
+    arr: `v.filter(e=>e>${num})`,
+    map: `[...v.values()].filter(e=>e>${num})`,
+    set: `[...v].filter(e=>e>${num})`,
     null: `null`,
-    num: `${str}>${num} ? ${str} : null`,
-    else: `Object.fromEntries(Object.entries(${str}).filter(([k,v])=>v>${num}))`,
+    num: `v>${num}?v:null`,
+    else: `Object.fromEntries(Object.entries(v).filter(([k,w])=>w>${num}))`,
   })
 const num = (str: string) =>
   casesBuilder(str, {
-    arr: `${str}.map(e=>+e)`,
-    map: `Object.fromEntries(Object.entries(${str}).map(([k,v])=>+v))`,
-    set: `[...${str}].map(e=>+e)`,
+    arr: `v.map(e=>+e)`,
+    map: `Object.fromEntries(Object.entries(v).map(([k,w])=>+w))`,
+    set: `[...v].map(e=>+e)`,
     null: `null`,
-    num: `+${str}`,
-    else: `Object.fromEntries(Object.entries(${str}).map(([k,v])=>+v))`,
+    num: `+v`,
+    else: `Object.fromEntries(Object.entries(v).map(([k,w])=>+w))`,
   })
 const unique = (str: string) =>
   casesBuilder(str, {
-    arr: `[...new Set(${str})]`,
-    map: `[...new Set(${str}.values())]`,
-    set: `[...${str}]`,
+    arr: `[...new Set(v)]`,
+    map: `[...new Set(v.values())]`,
+    set: `[...v]`,
     null: `null`,
-    num: `${str}`,
-    else: `Object.fromEntries(Object.entries(${str}).filter(([k,v],i,a)=>a.findIndex(([k2,v2])=>v2===v)===i))`,
+    num: `v`,
+    else: `Object.fromEntries(Object.entries(v).filter(([k,w],i,a)=>a.findIndex(([k2,w2])=>w2===w)===i))`,
   })
 const count = (str: string) =>
   casesBuilder(str, {
-    arr: `${str}.length`,
-    map: `${str}.size`,
-    set: `${str}.size`,
+    arr: `v.length`,
+    map: `v.size`,
+    set: `v.size`,
     null: `null`,
     num: `1`,
-    else: `Object.keys(${str}).length`,
+    else: `Object.keys(v).length`,
   })
 
 type Operation = {
@@ -161,8 +162,7 @@ function applyModifiers(expression: string, modifiers: FunctionExpression[] | nu
     }
   }
 
-  // TODO: Highly unscalable. Every iteration scales exponentially.
-  //      Each iteration should be cached and reused.
+  // TODO: 1. Unit Tests & Improve architecture
   let result = expression
   for (const modifier of modifierContents) {
     const maybeModifier = parseModifier(modifier)
