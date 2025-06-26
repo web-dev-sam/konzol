@@ -4,14 +4,16 @@ import { parse as babelParse, traverse, types } from '../utils/babel'
 import { konzolParse } from '../utils/parser'
 import { logSyntaxError } from '../utils/utils'
 import { build } from './builder'
+import { type KonzolOptions } from '../types/types'
 
-export function transform(codeToTransform: string, id: string, options: KonzolOptions): { code: string; map: SourceMap | null } | undefined {
+export function transform(codeToTransform: string, id: string, options: KonzolOptions, evaluate: boolean = false): { code: string; map: SourceMap | null } | { error: unknown } | undefined {
   if (!/\.(ts|js|vue)$/.test(id)) {
     return
   }
-  if (!options) {
-    console.error(`Konzol: Options are not provided for the plugin.`)
-    return
+  if (!options || !options.entry) {
+    const error = `Konzol: Options are not provided for the plugin.`
+    console.error(error)
+    return { error }
   }
 
   let scriptOffset = 0
@@ -61,8 +63,6 @@ export function transform(codeToTransform: string, id: string, options: KonzolOp
           return
         }
 
-        // const replacedFunc = build(konzolParse())
-
         if (node.arguments.length === 0) {
           console.warn(
             `Konzol: Call to "${expectedFuncName}" without arguments at ${id}:${node.loc?.start.line}:${node.loc?.start.column}. Statement is ignored.`,
@@ -82,7 +82,7 @@ export function transform(codeToTransform: string, id: string, options: KonzolOp
         const format = node.arguments[0].value
         try {
           const formatAST = konzolParse(format)
-          const str = build(formatAST) //, node.arguments.slice(1), code);
+          const str = build(formatAST, evaluate) //, node.arguments.slice(1), code);
 
           const finalCode = `;(${str})`
           codeSizes.push(finalCode.length)

@@ -11,9 +11,4 @@ export default defineConfig({
       entry: 'src/tests/dev/main.ts',
     })
   ],
-  resolve: {
-    alias: {
-      '@': '/src'
-    }
-  },
 })

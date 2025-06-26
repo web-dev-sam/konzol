@@ -1,7 +1,13 @@
 import type { UnpluginFactory } from 'unplugin'
 import { createUnplugin } from 'unplugin'
 import { transform } from './core/transform'
-import { buildVirtualModule } from './macros/find'
+import { fileURLToPath } from 'url'
+import fs from 'fs'
+import path from 'path'
+import { type KonzolOptions } from './types/types'
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
   const virtualModuleId = 'virtual:konzol'
@@ -17,7 +23,10 @@ export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
     },
     async load(id) {
       if (id === resolvedVirtualModuleId) {
-        const { code } = await buildVirtualModule()
+        const code = fs.readFileSync(
+          path.resolve(__dirname, '../assets/virtual-module.min.js'),
+          'utf-8'
+        )
         console.info(`Konzol: Virtual module injected (${code.length} characters)`)
         return code
       }
@@ -29,7 +38,7 @@ export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
       const usesGlobals = /(log!\()/.test(code)
       if (usesGlobals && !code.includes(virtualModuleId)) {
         const transformedCode = transform(code, id, options)
-        if (transformedCode == null) {
+        if (transformedCode == null || 'error' in transformedCode) {
           return
         }
         return {
@@ -37,7 +46,11 @@ export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
           map: transformedCode.map,
         }
       }
-      return transform(code, id, options)
+      const result = transform(code, id, options)
+      if (result == null || 'error' in result) {
+        return
+      }
+      return result
     },
   }
 }

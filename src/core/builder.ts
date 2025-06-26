@@ -6,8 +6,9 @@ import {
   isWildcardSegment,
   type ParseResult,
 } from '../utils/parser'
+import { aliases, Operation, operations } from './registry'
 
-export function build(ast: ParseResult) {
+export function build(ast: ParseResult, evaluate: boolean) {
   let resultExpression = ''
 
   for (const konzolNodeIndex in ast) {
@@ -38,7 +39,8 @@ export function build(ast: ParseResult) {
     }
   }
 
-  const resultCode = `async(_,a)=>{let v;console.log(${resultExpression})}`
+  const evalExpression = evaluate ? `return` : `console.log`
+  const resultCode = `async(_,a)=>{let v;${evalExpression}(${resultExpression})}`
   // console.log("------")
   // console.log(resultCode)
   // console.log("------")
@@ -50,7 +52,7 @@ type HandledType = 'null' | 'arr' | 'map' | 'set' | 'num' | 'else'
 type SafeCasesMap = {
   [K in HandledType]: string
 }
-function casesBuilder(checkedVal: string, cases: SafeCasesMap) {
+export function casesBuilder(checkedVal: string, cases: SafeCasesMap) {
   return (
     `await __kzl_cases(${checkedVal},{` +
     Object.entries(cases)
@@ -59,95 +61,6 @@ function casesBuilder(checkedVal: string, cases: SafeCasesMap) {
     `})`
   )
 }
-
-// TODO: For caching, easiest way is to use functions with one param that one char long.
-const values = (str: string) =>
-  casesBuilder(str, {
-    arr: 'v',
-    map: `[...v.values()]`,
-    set: `[...v]`,
-    null: `null`,
-    num: `v`,
-    else: `Object.values(v)`,
-  })
-const keys = (str: string) =>
-  casesBuilder(str, {
-    arr: `v.map((_,i)=>i)`,
-    map: `[...v.keys()]`,
-    set: `[...v].map((_,i)=>i)`,
-    null: `null`,
-    num: `v`,
-    else: `Object.keys(v)`,
-  })
-const gt = (str: string, num: string) =>
-  casesBuilder(str, {
-    arr: `v.filter(e=>e>${num})`,
-    map: `[...v.values()].filter(e=>e>${num})`,
-    set: `[...v].filter(e=>e>${num})`,
-    null: `null`,
-    num: `v>${num}?v:null`,
-    else: `Object.fromEntries(Object.entries(v).filter(([k,w])=>w>${num}))`,
-  })
-const num = (str: string) =>
-  casesBuilder(str, {
-    arr: `v.map(e=>+e)`,
-    map: `Object.fromEntries(Object.entries(v).map(([k,w])=>+w))`,
-    set: `[...v].map(e=>+e)`,
-    null: `null`,
-    num: `+v`,
-    else: `Object.fromEntries(Object.entries(v).map(([k,w])=>+w))`,
-  })
-const unique = (str: string) =>
-  casesBuilder(str, {
-    arr: `[...new Set(v)]`,
-    map: `[...new Set(v.values())]`,
-    set: `[...v]`,
-    null: `null`,
-    num: `v`,
-    else: `Object.fromEntries(Object.entries(v).filter(([k,w],i,a)=>a.findIndex(([k2,w2])=>w2===w)===i))`,
-  })
-const count = (str: string) =>
-  casesBuilder(str, {
-    arr: `v.length`,
-    map: `v.size`,
-    set: `v.size`,
-    null: `null`,
-    num: `1`,
-    else: `Object.keys(v).length`,
-  })
-
-type Operation = {
-  alias: string[]
-  // biome-ignore lint/suspicious/noExplicitAny: Used as constraint for builder functions
-  builder: (str: string, ...args: any[]) => string
-}
-const operations = [
-  {
-    alias: ['v', 'values', 'value'],
-    builder: values,
-  },
-  {
-    alias: ['k', 'keys', 'key'],
-    builder: keys,
-  },
-  {
-    alias: ['u', 'unique', 'uniq'],
-    builder: unique,
-  },
-  {
-    alias: ['c', 'count', 'len', 'length'],
-    builder: count,
-  },
-  {
-    alias: ['gt'],
-    builder: gt,
-  },
-  {
-    alias: ['n', 'number', 'num'],
-    builder: num,
-  },
-] as const satisfies Operation[]
-const aliases = operations.flatMap((e) => e.alias)
 
 function applyModifiers(expression: string, modifiers: FunctionExpression[] | null) {
   const modifierContents = modifiers?.map((modifier) => modifier.content)

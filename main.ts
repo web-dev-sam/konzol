@@ -1,9 +1,6 @@
-/** biome-ignore-all lint/style/noNonNullAssertion: Ignore this for now */
 
-
-
-
-
+// In your .d.ts files
+declare function log(format: string, ...args: unknown[]): void
 
 
 
