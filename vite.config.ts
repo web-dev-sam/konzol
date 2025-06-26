@@ -1,12 +1,12 @@
 import { defineConfig } from 'vite'
-import vue from '@vitejs/plugin-vue'
-import konzol from './src/vite'
+import Vue from '@vitejs/plugin-vue'
+import Konzol from './src/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    vue(),
-    konzol({
+    Vue(),
+    Konzol({
       functionName: 'log!',
       entry: 'src/tests/dev/main.ts',
     })
