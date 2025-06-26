@@ -1,3 +1,6 @@
+import { minify } from '@swc/core'
+
+
 type KonzolHelperFunctionNames = 'find' | 'cases'
 
 export const namespace = (name: KonzolHelperFunctionNames, segment: string) => `globalThis.__kzl_${name} || (globalThis.__kzl_${name}=${segment});`
@@ -54,4 +57,17 @@ return e()
 export const codeSegments: Record<KonzolHelperFunctionNames, string> = {
   find: findCodeSegment,
   cases: casesCodeSegment,
+}
+
+export async function buildVirtualModule() {
+  return await minify(
+    Object.values(codeSegments).join(';'), 
+    {
+      compress: true,
+      mangle: true,
+      format: {
+        comments: false,
+      }
+    }
+  )
 }

@@ -1,7 +1,7 @@
 import type { UnpluginFactory } from 'unplugin'
 import { createUnplugin } from 'unplugin'
 import { transform } from './core/transform'
-import { codeSegments } from './macros/find'
+import { buildVirtualModule } from './macros/find'
 
 export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
   const virtualModuleId = 'virtual:konzol'
@@ -15,9 +15,9 @@ export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
         return resolvedVirtualModuleId
       }
     },
-    load(id) {
+    async load(id) {
       if (id === resolvedVirtualModuleId) {
-        const code = codeSegments.find + codeSegments.cases
+        const { code } = await buildVirtualModule()
         console.info(`Konzol: Virtual module injected (${code.length} characters)`)
         return code
       }
