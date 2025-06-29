@@ -23,7 +23,11 @@ export async function run(code: string, {
       entry: 'src/tests/dev/main.ts',
     }
   ) as any)?.code
-  return await eval((loadVirtual ? virtualModule : '') + transformedCode) ?? ''
+  try {
+    return await eval((loadVirtual ? virtualModule : '') + transformedCode) ?? ''
+  } catch (e) {
+    throw `${e}\n${transformedCode}\n`
+  }
 }
 
 export async function expectResult(code: string, expected: unknown[], options: RunOptions = {}) {
