@@ -49,8 +49,8 @@ export function build(ast: ParseResult, callExpression: babelTypes.CallExpressio
   }
 
   const args = new Array(variableCount).fill(0).map((_, i) => '$' + getVariableName(i)).join(',')
-  const declarations = new Array(variableCount).fill(0).map((_, i) => '_' + getVariableName(i)).join(',')
-  const finalCode = `;(async(_,${args})=>{let v,${declarations};console.log(${resultExpression})})`
+  const declarations = ['v', ...new Array(variableCount).fill(0).map((_, i) => '_' + getVariableName(i))].join(',')
+  const finalCode = `;(async(_,${args})=>{let ${declarations};console.log(${resultExpression})})`
   return finalCode
 }
 

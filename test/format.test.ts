@@ -1,6 +1,8 @@
 import { expect, it, describe, vi, beforeEach } from 'vitest'
 import { expectError, expectResult, RED, RESET, run } from './utils/utils'
 
+const dataUsers = fetch('https://jsonplaceholder.typicode.com/users').then((r) => r.json())
+
 vi.stubGlobal('console', {
   warn: vi.fn(),
   error: vi.fn(),
@@ -91,6 +93,10 @@ describe('Formatter with modifiers', () => {
   it('numbers values are just themselves', async () => {
     expectResult(`log!("{:v}", 6)`, [6])
   })
+
+  it('complex modifiers', async () => {
+    expectResult(`log!("{*.address.geo.lat}", [])`, [[]])
+  })
 })
 
 
@@ -100,7 +106,7 @@ describe('Macro positioning', () => {
   })
   
   it('should handle in fetch then', async () => {
-    const expectedObj = await fetch('https://jsonplaceholder.typicode.com/users').then((r) => r.json())
+    const expectedObj = await dataUsers
     expectResult(`
       fetch('https://jsonplaceholder.typicode.com/users')
         .then((r) => r.json())
