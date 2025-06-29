@@ -29,8 +29,6 @@
     "@types/babel__generator": "^7.27.0",
     "@types/babel__traverse": "^7.20.7",
     "@types/node": "^22.15.29",
-    "@vitejs/plugin-vue": "^5.2.3",
-    "@vue/tsconfig": "^0.7.0",
     "magic-string": "^0.30.17",
     "peggy": "^5.0.4",
     "ts-node": "^10.9.2",

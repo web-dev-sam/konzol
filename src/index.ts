@@ -50,6 +50,7 @@ export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
       if (result == null || 'error' in result) {
         return
       }
+      console.log(result.code)
       return result
     },
   }

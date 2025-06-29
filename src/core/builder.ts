@@ -1,3 +1,4 @@
+import { getVariableName } from '../utils/utils'
 import {
   type FunctionExpression,
   isIdentifierSegment,
@@ -7,45 +8,48 @@ import {
   type ParseResult,
 } from '../utils/parser'
 import { aliases, Operation, operations } from './registry'
+import { babelTypes } from '../utils/babel'
 
-export function build(ast: ParseResult, evaluate: boolean) {
+export function build(ast: ParseResult, callExpression: babelTypes.CallExpression) {
+  const formatVariableCount = findVariableCount(ast)
+  const providedVariableCount = callExpression.arguments.length - 1
+  const variableCount = Math.max(formatVariableCount, providedVariableCount)
+
   let resultExpression = ''
+  let i = 0
 
   for (const konzolNodeIndex in ast) {
     // DFS
     const konzolNode = ast[konzolNodeIndex]
     if (isTextExpression(konzolNode)) {
-      resultExpression += `"${konzolNode.value}"`
+      resultExpression += `${+konzolNodeIndex > 0 ? ',' : ''}"${konzolNode.value}"`
     } else if (isVariableExpression(konzolNode)) {
       // TODO: The order of functions is important
-      if (konzolNode.path.length === 0) {
-        // "{}"
-        const modifiedArg = applyModifiers(`a`, konzolNode.modifiers)
-        resultExpression += `, ${modifiedArg}`
-      } else {
-        const path = konzolNode.path.map((part) => {
-          if (isIdentifierSegment(part)) {
-            return part.name
-          } // else if (isNestedVariableSegment(part)) {
-          else if (isWildcardSegment(part)) {
-            return '*'
-          }
-          return ''
-        })
-        const modifiedArg = applyModifiers(`v`, konzolNode.modifiers)
-
-        resultExpression += `${+konzolNodeIndex > 0 ? ',' : ''}(v=__kzl_find(a, ${JSON.stringify(path)}),${modifiedArg})`
+      if (konzolNode.path.length === 0) { // "{}"
+        const modifiedArg = applyModifiers('$' + getVariableName(i++), konzolNode.modifiers)
+        resultExpression += `${+konzolNodeIndex > 0 ? ',' : ''}${modifiedArg}`
+        continue
       }
+
+      const path = konzolNode.path.map((part) => {
+        if (isIdentifierSegment(part)) {
+          return part.name
+        } // else if (isNestedVariableSegment(part)) {
+        else if (isWildcardSegment(part)) {
+          return '*'
+        }
+        return ''
+      })
+      const tempVarName = '_' + getVariableName(i++)
+      const varName = '$' + getVariableName(i)
+      const modifiedArg = applyModifiers(varName, konzolNode.modifiers)
+      resultExpression += `${+konzolNodeIndex > 0 ? ',' : ''}(${tempVarName}=__kzl_find(${varName}, ${JSON.stringify(path)}),${modifiedArg})`
     }
   }
 
-  const evalExpression = evaluate ? `return` : `console.log`
-  const resultCode = `async(_,a)=>{let v;${evalExpression}(${resultExpression})}`
-  // console.log("------")
-  // console.log(resultCode)
-  // console.log("------")
-
-  return resultCode
+  const args = new Array(variableCount).fill(0).map((_, i) => '$' + getVariableName(i)).join(',')
+  const finalCode = `;(async(_,${args})=>{let v;console.log(${resultExpression})})`
+  return finalCode
 }
 
 type HandledType = 'null' | 'arr' | 'map' | 'set' | 'num' | 'else'
@@ -146,4 +150,9 @@ function parseModifier(input: string): Modifier | null {
   })
 
   return { prefix: prefix.trim(), args }
+}
+
+function findVariableCount(formatAST: ParseResult) {
+  // TODO: Can have nested vars
+  return formatAST.filter(e => e.type === 'variable').length
 }

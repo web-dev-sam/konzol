@@ -80,22 +80,43 @@ export function unproxify(obj: unknown): UnproxifiedResult | undefined {
   return result
 }
 
-export function logSyntaxError(error: KonzolSyntaxError, id: string, code: string): void {
+export function logSyntaxError(error: KonzolSyntaxError, id: string, code: string): string {
   const { message, location } = error
   const { start } = location
 
   const lines = code.split('\n')
-  const errorLine = lines[start.line - 1] || ''
+  const errorLine = (lines[start.line - 1] || '').replaceAll('`', '\\`')
   const pointer = `${' '.repeat(start.column - 1)}^`
 
-  logRed(`Konzol: Invalid formatter string found in\n    ${id}\n`)
-  logRed(`"${errorLine}"`)
-  logRed(` ${pointer} ${message}\n`)
+  const errorStr = `Konzol: Invalid formatter string found in ${id}\n"${errorLine}"\n ${pointer} ${message}\n`
+  logRed(errorStr)
+  return `console.error(\`${errorStr}\`)`
 }
 
-export function logRed(...args: unknown[]): void {
+export function logRed(...args: any[]): void {
   const RED = '\x1b[31m'
   const RESET = '\x1b[0m'
 
-  console.log(RED, ...args, RESET)
+  console.error(RED, ...args, RESET)
+}
+
+export function getVariableName(index: number): string {
+  let result = '';
+  let currentIndex = index;
+
+  do {
+    result = String.fromCharCode(97 + (currentIndex % 26)) + result;
+    currentIndex = Math.floor(currentIndex / 26) - 1;
+  } while (currentIndex >= 0);
+
+  return result;
+}
+
+export type Result<T> = [true, T] | [false, unknown]
+export function unwrap<T>(callback: () => T): Result<T> {
+  try {
+    return [true, callback()]
+  } catch (e) {
+    return [false, e]
+  }
 }

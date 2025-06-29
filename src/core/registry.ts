@@ -22,7 +22,7 @@ export const operations = [
         map: `[...v.keys()]`,
         set: `[...v].map((_,i)=>i)`,
         null: `null`,
-        num: `v`,
+        num: `[]`,
         else: `Object.keys(v)`,
       })
     },
