@@ -22,57 +22,57 @@ describe('Simple formatter syntax', () => {
   })
 
   it('should error when no arguments provided', async () => {
-    expectError(`log!()`, [expect.stringContaining('Konzol: Call to')])
+    await expectError(`log!()`, [expect.stringContaining('Konzol: Call to')])
   })
 
   it('should error when first argument is not a string', async () => {
-    expectError(`log!(42, 42)`, [expect.stringContaining('Konzol: First argument')])
+    await expectError(`log!(42, 42)`, [expect.stringContaining('Konzol: First argument')])
   })
 
   it('should log a plain string', async () => {
     const info = vi.mocked(console.info)
-    expectResult(`log!("42")`, ["42"])
+    await expectResult(`log!("42")`, ["42"])
     expect(info).toHaveBeenCalledWith(expect.stringContaining('Konzol: Temporarily injected code size'))
   })
 
   it('should log undefined when placeholder has no argument', async () => {
-    expectResult(`log!("{}")`, [undefined])
+    await expectResult(`log!("{}")`, [undefined])
   })
 
   it('should substitute placeholder with argument', async () => {
-    expectResult(`log!("{}", 6)`, [6])
+    await expectResult(`log!("{}", 6)`, [6])
   })
 
   it('should split string with placeholder at start', async () => {
-    expectResult(`log!("H{}", 6)`, ['H', 6])
+    await expectResult(`log!("H{}", 6)`, ['H', 6])
   })
 
   it('should split string with placeholder at end', async () => {
-    expectResult(`log!("{}H", 6)`, [6, 'H'])
+    await expectResult(`log!("{}H", 6)`, [6, 'H'])
   })
 
   it('should split string with placeholder in middle', async () => {
-    expectResult(`log!("H{}J", 6)`, ['H', 6, 'J'])
+    await expectResult(`log!("H{}J", 6)`, ['H', 6, 'J'])
   })
 
   it('should preserve whitespace around placeholders', async () => {
-    expectResult(`log!(" {}J", 6)`, [' ', 6, 'J'])
+    await expectResult(`log!(" {}J", 6)`, [' ', 6, 'J'])
   })
 
   it('should handle multiple placeholders with insufficient arguments', async () => {
-    expectResult(`log!("{}{}", 1)`, [1, undefined])
+    await expectResult(`log!("{}{}", 1)`, [1, undefined])
   })
 
   it('should handle multiple placeholders with matching arguments', async () => {
-    expectResult(`log!("{}{}", 6, 9)`, [6, 9])
+    await expectResult(`log!("{}{}", 6, 9)`, [6, 9])
   })
 
   it('should handle multiple placeholders with excessive arguments', async () => {
-    expectResult(`log!("{}{}", 6, 9, 42)`, [6, 9])
+    await expectResult(`log!("{}{}", 6, 9, 42)`, [6, 9])
   })
 
   it('should handle multiple placeholders with excessive arguments', async () => {
-    expectError(`log!("{ }{}", 6, 9)`, [expect.stringContaining('Konzol: Invalid formatter string')])
+    await expectError(`log!("{ }{}", 6, 9)`, [expect.stringContaining('Konzol: Invalid formatter string')])
   })
 })
 
@@ -83,19 +83,19 @@ describe('Formatter with modifiers', () => {
   })
 
   it('should log undefined when placeholder has no argument', async () => {
-    expectResult(`log!("{:n}")`, [null], { loadVirtual: true })
+    await expectResult(`log!("{:n}")`, [null], { loadVirtual: true })
   })
 
   it('numbers have no keys', async () => {
-    expectResult(`log!("{:k}", 6)`, [[]])
+    await expectResult(`log!("{:k}", 6)`, [[]])
   })
 
   it('numbers values are just themselves', async () => {
-    expectResult(`log!("{:v}", 6)`, [6])
+    await expectResult(`log!("{:v}", 6)`, [6])
   })
 
   it('complex modifiers', async () => {
-    expectResult(`log!("{*.address.geo.lat}", [])`, [[]])
+    await expectResult(`log!("{*.address.geo.lat}", [])`, [[]], { loadVirtual: true })
   })
 })
 
@@ -107,7 +107,7 @@ describe('Macro positioning', () => {
   
   it('should handle in fetch then', async () => {
     const expectedObj = await dataUsers
-    expectResult(`
+    await expectResult(`
       fetch('https://jsonplaceholder.typicode.com/users')
         .then((r) => r.json())
         .then((users) => {
