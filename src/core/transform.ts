@@ -91,6 +91,7 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
     }
 
     const finalCode = build(formatAST, callExpression)
+    console.log(finalCode)
     codeSizes.push(finalCode.length)
 
     code.overwrite(

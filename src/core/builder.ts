@@ -40,15 +40,17 @@ export function build(ast: ParseResult, callExpression: babelTypes.CallExpressio
         }
         return ''
       })
-      const tempVarName = '_' + getVariableName(i++)
+      const tempVarName = '_' + getVariableName(i)
       const varName = '$' + getVariableName(i)
       const modifiedArg = applyModifiers(varName, konzolNode.modifiers)
       resultExpression += `${+konzolNodeIndex > 0 ? ',' : ''}(${tempVarName}=__kzl_find(${varName}, ${JSON.stringify(path)}),${modifiedArg})`
+      i++
     }
   }
 
   const args = new Array(variableCount).fill(0).map((_, i) => '$' + getVariableName(i)).join(',')
-  const finalCode = `;(async(_,${args})=>{let v;console.log(${resultExpression})})`
+  const declarations = new Array(variableCount).fill(0).map((_, i) => '_' + getVariableName(i)).join(',')
+  const finalCode = `;(async(_,${args})=>{let v,${declarations};console.log(${resultExpression})})`
   return finalCode
 }
 
