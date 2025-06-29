@@ -1,14 +1,15 @@
-import MagicString, { type SourceMap } from 'magic-string'
+import MagicString from 'magic-string'
 import { SyntaxError as KonzolSyntaxError } from '../parser/parser'
-import { getAllCallExpressions, babelTypes } from '../utils/babel'
+import { getAllCallExpressions, babelTypes, isExpectedCall, isNestedMacro, logExpression } from '../utils/babel'
 import { konzolParse } from '../utils/parser'
 import { logRed, logSyntaxError, unwrap } from '../utils/utils'
 import { build } from './builder'
 import { type KonzolOptions } from '../types/types'
 import { vueLoader } from './loaders'
+import { overwrite } from '../utils/string'
 
 
-export function transform(codeStr: string, id: string, options: KonzolOptions): { code: string; map: SourceMap | null } | { error: unknown } | void {
+export function transform(codeStr: string, id: string, options: KonzolOptions): { code: string; map: null } | { error: unknown } | void {
   if (!/\.(ts|js|vue)$/.test(id)) return
   if (!options || !options.entry)
     return logRed(`Konzol: Options are not provided for the plugin.`)
@@ -19,12 +20,26 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
     if (result == null) return
     codeStr = result
   }
+  
+  const macroName = options.functionName?.trim() || 'log!'
+  const expressions = getAllCallExpressions(codeStr, macroName)
+  const nestedMacroExpressions = expressions.filter(e => isNestedMacro(expressions, e))
+  for (const callExpression of nestedMacroExpressions) {
+    const expStart = callExpression.start, expEnd = callExpression.end
+    const fileLine = callExpression.loc?.start.line, fileCol = callExpression.loc?.start.column
+    const link = [id, fileLine, fileCol].filter(Boolean).join(':')
+    if (expStart == null || expEnd == null) {
+      console.error(`Konzol: Found AST node without start or end position at ${link}. Skipping transformation.`)
+      continue
+    }
+    codeStr = overwrite(codeStr, expStart, expEnd, 'null')
+  }
 
-  const callExpressions = getAllCallExpressions(codeStr)
   const code = new MagicString(codeStr)
+  const validExpressions = getAllCallExpressions(codeStr, macroName)
   const codeSizes: number[] = []
   let hasReplacement = false
-  for (const callExpression of callExpressions) {
+  for (const callExpression of validExpressions) {
     const expStart = callExpression.start, expEnd = callExpression.end
     const fileLine = callExpression.loc?.start.line, fileCol = callExpression.loc?.start.column
     const link = [id, fileLine, fileCol].filter(Boolean).join(':')
@@ -35,24 +50,14 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
 
     const startOffset = expStart
     const endOffset = expEnd
-    const macroName = options.functionName?.trim() || 'log!'
-    const usesMacroSyntax = macroName.endsWith('!')
-    const macroFunc = usesMacroSyntax ? macroName.slice(0, -1) : macroName
     const stripCode = () => {
       code.overwrite(startOffset, endOffset, `;`)
       hasReplacement = true
     }
 
     // Find expression
-    const isCallSyntax =
-      babelTypes.isIdentifier(callExpression.callee) &&
-      callExpression.callee.name === macroName
-    const isMacroSyntax =
-      babelTypes.isTSNonNullExpression(callExpression.callee) &&
-      babelTypes.isIdentifier(callExpression.callee.expression) &&
-      callExpression.callee.expression.name === macroFunc
-    const foundExpression = usesMacroSyntax ? isMacroSyntax : isCallSyntax
-    if (!foundExpression) continue
+    const foundExpectedCall = isExpectedCall(callExpression, macroName)
+    if (!foundExpectedCall) continue
 
     // Handle found expression
     if (process.env.NODE_ENV === 'production') {
@@ -82,21 +87,19 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
         const loggingCode = logSyntaxError(formatAST, id, format)
         const newCode = code
           .slice(startOffset, endOffset)
-          .replace(macroName, `;(_=>${loggingCode})`)
-          .toString()
+          .replace(macroName, `;(_=>${loggingCode})`).toString()
         code.overwrite(startOffset, endOffset, newCode)
         hasReplacement = true
       }
       continue
     }
-
     const finalCode = build(formatAST, callExpression)
     codeSizes.push(finalCode.length)
 
-    code.overwrite(
-      startOffset, endOffset,
+    code.overwrite(startOffset, endOffset,
       code.slice(startOffset, endOffset)
-        .replace(macroName, finalCode).toString()
+        .replace(macroName, finalCode)
+        .toString()
     )
     hasReplacement = true
   }

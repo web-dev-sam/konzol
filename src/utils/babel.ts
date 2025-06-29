@@ -14,7 +14,7 @@ export const generate = (typeof _generate === 'function' ? __generate : __genera
 
 export { parse, babelTypes }
 
-export function getAllCallExpressions(code: string): babelTypes.CallExpression[] {
+export function getAllCallExpressions(code: string, funcName: string): babelTypes.CallExpression[] {
   const ast = parse(code, {
     sourceType: 'module',
     plugins: ['typescript', 'jsx'],
@@ -22,8 +22,34 @@ export function getAllCallExpressions(code: string): babelTypes.CallExpression[]
   const callExpressions: babelTypes.CallExpression[] = []
   traverse(ast, {
     CallExpression({ node }): void {
-      callExpressions.push(node)
+      if (isExpectedCall(node, funcName)) {
+        callExpressions.push(node)
+      }
     }
   })
   return callExpressions
+}
+
+
+export function isNestedMacro(haystack: babelTypes.CallExpression[], needle: babelTypes.CallExpression): boolean {
+  return haystack.some(expression => {
+    return expression.start! < needle.start! && expression.end! > needle.end!
+  })
+}
+
+export function isExpectedCall(expression: babelTypes.CallExpression, macroName: string) {
+  const usesMacroSyntax = macroName.endsWith('!')
+  const macroFunc = usesMacroSyntax ? macroName.slice(0, -1) : macroName
+  const isCallSyntax =
+    babelTypes.isIdentifier(expression.callee) &&
+    expression.callee.name === macroName
+  const isMacroSyntax =
+    babelTypes.isTSNonNullExpression(expression.callee) &&
+    babelTypes.isIdentifier(expression.callee.expression) &&
+    expression.callee.expression.name === macroFunc
+  return usesMacroSyntax ? isMacroSyntax : isCallSyntax
+}
+
+export function logExpression(expression: babelTypes.CallExpression, code: string) {
+  console.log(code.slice(expression.start!, expression.end!))
 }

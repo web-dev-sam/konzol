@@ -116,13 +116,13 @@ describe('Macro positioning', () => {
     `, ['Original: ', expect.objectContaining(expectedObj)])
   })
 
-  // it('should handle in fetch then', async () => {
-  //   const log = vi.mocked(console.log)
-  //   await run(`
-  //     log!('Original: {}', log!('Original: {}', users))
-  //   `)
-  //   expect(log).toHaveBeenCalledWith(undefined)
-  // })
+  it('nested macros are replaced with null', async () => {
+    const log = vi.mocked(console.log)
+    await run(`
+      log!('Original: {}', log!('{}', 9))
+    `)
+    expect(log).toHaveBeenCalledWith('Original: ', null)
+  })
 })
 
 

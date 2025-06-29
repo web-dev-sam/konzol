@@ -42,7 +42,7 @@ export function build(ast: ParseResult, callExpression: babelTypes.CallExpressio
       })
       const tempVarName = '_' + getVariableName(i)
       const varName = '$' + getVariableName(i)
-      const modifiedArg = applyModifiers(varName, konzolNode.modifiers)
+      const modifiedArg = applyModifiers(tempVarName, konzolNode.modifiers)
       resultExpression += `${+konzolNodeIndex > 0 ? ',' : ''}(${tempVarName}=__kzl_find(${varName}, ${JSON.stringify(path)}),${modifiedArg})`
       i++
     }
