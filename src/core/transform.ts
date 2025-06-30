@@ -92,7 +92,7 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
         const loggingCode = logSyntaxError(formatAST, id, format)
         const newCode = code
           .slice(startOffset, endOffset)
-          .replace(macroName, `;(_=>${loggingCode})`).toString()
+          .replace(macroName, loggingCode).toString()
         code.overwrite(startOffset, endOffset, newCode)
         hasReplacement = true
       }

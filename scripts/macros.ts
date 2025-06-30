@@ -92,6 +92,7 @@ export async function cases(value: any, logic: any) {
   if (value instanceof Map) return logic.map?.(value) ?? e()
   if (value instanceof Set) return logic.set?.(value) ?? e()
   if (typeof value === 'number') return logic.num?.(value) ?? e()
+  if (typeof value === 'string') return logic.str?.(value) ?? e()
   return e()
 }
 

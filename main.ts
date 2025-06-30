@@ -531,7 +531,7 @@ const data = {
 
 
 log!('Analytics: {products}', data)
-log!('Found {products:s<floral>|v|c} florals in products', data)
+log!('Found {:@floral|@summer|c} string that contain "floral" and "summer"', data)
 
 
 

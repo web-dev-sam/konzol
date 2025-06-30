@@ -1,3 +1,4 @@
+import { createRoot } from '../core/constructs'
 import type { SyntaxError as KonzolSyntaxError } from '../parser/parser'
 
 interface ProxyLike {
@@ -90,7 +91,10 @@ export function logSyntaxError(error: KonzolSyntaxError, id: string, code: strin
 
   const errorStr = `Konzol: Invalid formatter string found in ${id}\n"${errorLine}"\n ${pointer} ${message}\n`
   logRed(errorStr)
-  return `console.error(\`${errorStr}\`)`
+  return createRoot({
+    body: `console.error(\`${errorStr}\`)`,
+    strategy: 'error'
+  })
 }
 
 export function logRed(...args: any[]): void {
