@@ -67,6 +67,23 @@ describe('Simple formatter syntax', () => {
     await expectResult(`log!("{}{}", 6, 9)`, [6, 9])
   })
 
+  it('should handle simple placeholder replacement', async () => {
+    await expectResult(`log!("Hello {}", "World")`, ["Hello ", "World"]);
+  });
+
+  it('should handle mixed types in placeholders', async () => {
+    await expectResult(`log!("Number: {}, String: {}, Boolean: {}", 42, "test", true)`,
+      ["Number: ", 42, ", String: ", "test", ", Boolean: ", true]);
+  });
+
+  it('should extract simple object properties', async () => {
+    await expectResult(
+      'log!("Name: {name}", { name: "John", age: 30 })',
+      ['Name: ', { name: 'John' }],
+      { loadVirtual: true }
+    );
+  });
+
   it('should handle multiple placeholders with excessive arguments', async () => {
     await expectResult(`log!("{}{}", 6, 9, 42)`, [6, 9])
   })
@@ -104,7 +121,7 @@ describe('Macro positioning', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
-  
+
   it('should handle in fetch then', async () => {
     const expectedObj = await dataUsers
     await expectResult(`

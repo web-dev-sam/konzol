@@ -54,6 +54,19 @@ export const operations = [
     },
   },
   {
+    alias: ['search', 's'],
+    builder(str: string, query: string) {
+      return casesBuilder(str, {
+        arr: `__kzl_search(v, ${query})`,
+        map: `__kzl_search(v, ${query})`,
+        set: `__kzl_search(v, ${query})`,
+        null: `null`,
+        num: `__kzl_search(v, ${query})`,
+        else: `__kzl_search(v, ${query})`,
+      })
+    },
+  },
+  {
     alias: ['gt'],
     builder(str: string, num: number) {
       return casesBuilder(str, {
@@ -115,6 +128,45 @@ export const operations = [
         null: `null`,
         num: `+v`,
         else: `Object.fromEntries(Object.entries(v).map(([k,w])=>+w))`,
+      })
+    },
+  },
+  {
+    alias: ['first', '0'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v[0]`,
+        map: `[...v][0]`,
+        set: `[...v][0]`,
+        null: `null`,
+        num: `v`,
+        else: `v`,
+      })
+    },
+  },
+  {
+    alias: ['last'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v[v.length-1]`,
+        map: `[...v][v.size-1]`,
+        set: `[...v][v.size-1]`,
+        null: `null`,
+        num: `v`,
+        else: `v`,
+      })
+    },
+  },
+  {
+    alias: ['sum'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v.reduce((a,b)=>isNaN(a+b)?0:a+b,0)`,
+        map: `[...v].reduce((a,b)=>isNaN(a+b)?0:a+b,0)`,
+        set: `[...v].reduce((a,b)=>isNaN(a+b)?0:a+b,0)`,
+        null: `null`,
+        num: `v`,
+        else: `Object.entries(v).map(o=>o[1]).reduce((a,b)=>isNaN(a+b)?0:a+b,0)`,
       })
     },
   },

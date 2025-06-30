@@ -84,7 +84,7 @@ export function find(obj: ObjectValue, patternParts: string[]): SearchResults {
   return results;
 }
 
-export async function cases(value: unknown, logic: Record<string, (value: unknown) => unknown>) {
+export async function cases(value: any, logic: any) {
   if (value instanceof Promise) value = await value
   let e = () => logic.else?.(value)
   if (value == null) return logic.null?.(value) ?? e()
@@ -95,13 +95,57 @@ export async function cases(value: unknown, logic: Record<string, (value: unknow
   return e()
 }
 
+export function search(obj: any, searchString: any, caseSensitive = false) {
+  const results: any = {};
+  const visited = new WeakSet();
+  
+  function search(current: any, path: any = '') {
+    // Handle circular references
+    if (current !== null && typeof current === 'object') {
+      if (visited.has(current)) {
+        return;
+      }
+      visited.add(current);
+    }
+    
+    // Check if current value is a string and contains the substring
+    if (typeof current === 'string') {
+      const searchStr = caseSensitive ? searchString : searchString.toLowerCase();
+      const currentStr = caseSensitive ? current : current.toLowerCase();
+      
+      if (currentStr.includes(searchStr)) {
+        results[path] = current;
+      }
+    }
+    
+    // Recursively search object properties
+    if (current !== null && typeof current === 'object') {
+      if (Array.isArray(current)) {
+        // Handle arrays
+        current.forEach((item, index) => {
+          const newPath = path ? `${path}.${index}` : `${index}`;
+          search(item, newPath);
+        });
+      } else {
+        // Handle objects
+        Object.keys(current).forEach(key => {
+          const newPath = path ? `${path}.${key}` : key;
+          search(current[key], newPath);
+        });
+      }
+    }
+  }
+  
+  search(obj);
+  return results;
+}
 
 async function buildVirtualModule() {
   // TODO: Better error handling
   fs.writeFileSync(
     path.resolve(__dirname, "../assets/virtual-module.min.js"),
     (await minify(
-      [cases, find]
+      [cases, find, search]
         .map(func => namespace(func.name, func.toString()))
         .join(";"),
       {

@@ -74,6 +74,11 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
     }
     const formatExpression = callExpression.arguments[0]
     if (!babelTypes.isStringLiteral(formatExpression)) {
+      if (babelTypes.isTemplateLiteral(formatExpression)) {
+        logRed(`Konzol: First argument of "${macroName}" can't be a template literal (e.g. \`\`) at ${link}. Statement is ignored.`)
+        stripCode()
+        continue
+      }
       logRed(`Konzol: First argument of "${macroName}" must be an inline string literal at ${link}. Statement is ignored.`)
       stripCode()
       continue
