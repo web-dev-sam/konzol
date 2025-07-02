@@ -1,8 +1,8 @@
 import MagicString from 'magic-string'
 import { SyntaxError as KonzolSyntaxError } from '../parser/parser'
-import { getAllCallExpressions, babelTypes, isExpectedCall, isNestedMacro, logExpression } from '../utils/babel'
+import { getAllCallExpressions, babelTypes, isExpectedCall, isNestedMacro } from '../utils/babel'
 import { konzolParse } from '../utils/parser'
-import { logRed, logSyntaxError, unwrap } from '../utils/utils'
+import { logError, logRed, logLog, logSyntaxError, unwrap, charsToKB } from '../utils/utils'
 import { build } from './builder'
 import { type KonzolOptions } from '../types/types'
 import { vueLoader } from './loaders'
@@ -12,7 +12,7 @@ import { overwrite } from '../utils/string'
 export function transform(codeStr: string, id: string, options: KonzolOptions): { code: string; map: null } | { error: unknown } | void {
   if (!/\.(ts|js|vue)$/.test(id)) return
   if (!options || !options.entry)
-    return logRed(`Konzol: Options are not provided for the plugin.`)
+    return logRed(`Options are not provided for the plugin.`)
 
   // Load .vue files
   if (id.endsWith('.vue')) {
@@ -29,7 +29,7 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
     const fileLine = callExpression.loc?.start.line, fileCol = callExpression.loc?.start.column
     const link = [id, fileLine, fileCol].filter(Boolean).join(':')
     if (expStart == null || expEnd == null) {
-      console.error(`Konzol: Found AST node without start or end position at ${link}. Skipping transformation.`)
+      logError(`Found AST node without start or end position at ${link}. Skipping transformation.`)
       continue
     }
     codeStr = overwrite(codeStr, expStart, expEnd, 'null')
@@ -44,7 +44,7 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
     const fileLine = callExpression.loc?.start.line, fileCol = callExpression.loc?.start.column
     const link = [id, fileLine, fileCol].filter(Boolean).join(':')
     if (expStart == null || expEnd == null) {
-      console.error(`Konzol: Found AST node without start or end position at ${link}. Skipping transformation.`)
+      logError(`Found AST node without start or end position at ${link}. Skipping transformation.`)
       continue
     }
 
@@ -67,7 +67,7 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
 
     // Macro needs atleast a format parameter
     if (callExpression.arguments.length === 0) {
-      logRed(`Konzol: Call to "${macroName}" without arguments at ${link}. Statement is ignored.`)
+      logRed(`Call to "${macroName}" without arguments at ${link}. Statement is ignored.`)
       // TODO: error util for both vite/frontend
       stripCode()
       continue
@@ -75,11 +75,11 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
     const formatExpression = callExpression.arguments[0]
     if (!babelTypes.isStringLiteral(formatExpression)) {
       if (babelTypes.isTemplateLiteral(formatExpression)) {
-        logRed(`Konzol: First argument of "${macroName}" can't be a template literal (e.g. \`\`) at ${link}. Statement is ignored.`)
+        logRed(`First argument of "${macroName}" can't be a template literal (e.g. \`\`) at ${link}. Statement is ignored.`)
         stripCode()
         continue
       }
-      logRed(`Konzol: First argument of "${macroName}" must be an inline string literal at ${link}. Statement is ignored.`)
+      logRed(`First argument of "${macroName}" must be an inline string literal at ${link}. Statement is ignored.`)
       stripCode()
       continue
     }
@@ -110,7 +110,7 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
   }
   if (!hasReplacement) return
 
-  console.info(`Konzol: Temporarily injected code size: ${codeSizes.reduce((a, b) => a + b, 0)} characters`)
+  logLog(`Hydrate macros (${charsToKB(codeSizes.reduce((a, b) => a + b, 0))}KiB)`)
   return {
     code: code.toString(),
     map: null,

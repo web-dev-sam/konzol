@@ -97,11 +97,67 @@ export function logSyntaxError(error: KonzolSyntaxError, id: string, code: strin
   })
 }
 
-export function logRed(...args: any[]): void {
+export function logRed(str: string, ...args: any[]): void {
   const RED = '\x1b[31m'
   const RESET = '\x1b[0m'
+  console.error(getBrand() + RED + str, RED, ...args, RESET)
+}
 
-  console.error(RED, ...args, RESET)
+export function logWarn(str: string, ...args: any[]): void {
+  const YELLOW = '\x1b[33m'
+  const RESET = '\x1b[0m'
+  console.warn(getBrand() + YELLOW + str, YELLOW, ...args, RESET)
+}
+
+export function logSuccess(str: string, ...args: any[]): void {
+  const GREEN = '\x1b[32m'
+  const RESET = '\x1b[0m'
+  console.info(getBrand() + GREEN + str, GREEN, ...args, RESET)
+}
+
+export function logLog(str: string, ...args: any[]): void {
+  const GRAY = '\x1b[90m'
+  const RESET = '\x1b[0m'
+  console.info(getBrand() + GRAY + str, GRAY, ...args, RESET)
+}
+
+export function logError(str: string, ...args: any[]): void {
+  const BOLD_RED = '\x1b[1m\x1b[31m'
+  const RESET = '\x1b[0m'
+  console.error(getBrand() + BOLD_RED + str, BOLD_RED, ...args, RESET)
+}
+
+function getBrand(): string {
+  const GRAY = '\x1b[90m'
+  const BOLD_PURPLE = '\x1b[1m\x1b[35m'
+  const RESET = '\x1b[0m'
+  
+  const now = new Date()
+  const timestamp = now.toTimeString().split(' ')[0] // Gets HH:MM:SS format
+  
+  return `${GRAY}${timestamp}${RESET} ${BOLD_PURPLE}[konzol]${RESET} `
+}
+
+export function charsToKB(charCount: number): string {
+  return (charCount / 1024).toFixed(2)
+}
+
+function getCliBrand(): string[] {
+  const BOLD_PURPLE = '\x1b[1m\x1b[35m'
+  const RESET = '\x1b[0m'
+  
+  return [
+    `${BOLD_PURPLE}`,
+    `
+██╗  ██╗ ██████╗ ███╗   ██╗███████╗ ██████╗ ██╗     
+██║ ██╔╝██╔═══██╗████╗  ██║╚══███╔╝██╔═══██╗██║     
+█████╔╝ ██║   ██║██╔██╗ ██║  ███╔╝ ██║   ██║██║     
+██╔═██╗ ██║   ██║██║╚██╗██║ ███╔╝  ██║   ██║██║     
+██║  ██╗╚██████╔╝██║ ╚████║███████╗╚██████╔╝███████╗
+╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝ ╚═════╝ ╚══════╝
+    `,
+    `${RESET}`
+  ]
 }
 
 export function getVariableName(index: number): string {

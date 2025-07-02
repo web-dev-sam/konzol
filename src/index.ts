@@ -5,6 +5,7 @@ import { fileURLToPath } from 'url'
 import fs from 'fs'
 import path from 'path'
 import { type KonzolOptions } from './types/types'
+import { charsToKB, logLog } from './utils/utils'
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,7 +28,7 @@ export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
           path.resolve(__dirname, '../assets/virtual-module.min.js'),
           'utf-8'
         )
-        console.info(`Konzol: Virtual module injected (${code.length} characters)`)
+        logLog(`Add virtual module (${charsToKB(code.length)}KiB)`)
         return code
       }
     },

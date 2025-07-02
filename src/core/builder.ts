@@ -1,11 +1,14 @@
-import { getVariableName } from '../utils/utils'
+import { getVariableName, logWarn } from '../utils/utils'
 import {
   type FunctionExpression,
+  type ParseResult,
   isIdentifierSegment,
+  isNestedVariableSegment,
   isTextExpression,
   isVariableExpression,
   isWildcardSegment,
-  type ParseResult,
+  PathSegment,
+  VariableExpression,
 } from '../utils/parser'
 import { aliases, Operation, operations } from './registry'
 import { babelTypes } from '../utils/babel'
@@ -17,45 +20,55 @@ export function build(ast: ParseResult, callExpression: babelTypes.CallExpressio
   const variableCount = Math.max(formatVariableCount, providedVariableCount)
 
   let resultFuncArgs: string[] = []
-  let i = 0
+  let i = -1
+  type BuildReturn<N extends boolean> = N extends true ? string : null
+  const buildFromVariable = <N extends boolean>(
+    node: VariableExpression, 
+    nested: N
+  ): BuildReturn<N> => {
+    const varBaseName = getVariableName(++i)
+    const tempVarName = '_' + varBaseName
+    const varName = '$' + varBaseName
+    if (nested) {
+      logWarn('Nested expressions not supported!')
+      return `*` as BuildReturn<N>
+    }
+    
+    if (node.path.length === 0) { // "{}" "{:count}"
+      resultFuncArgs.push(applyModifiers(varName, node.modifiers))
+      return null as BuildReturn<N>
+    }
+
+    const path = node.path.map((part) => {
+      if (isIdentifierSegment(part)) return part.name
+      if (isNestedVariableSegment(part)) {
+        return buildFromVariable(part, true)
+      }
+      if (isWildcardSegment(part)) return '*'
+      return ''
+    })
+    
+    const result = applyModifiers(tempVarName, node.modifiers)
+    const findArgs = `${varName},${JSON.stringify(path)}`
+    resultFuncArgs.push(`(${tempVarName}=__kzl_find(${findArgs}),${result})`)
+    return null as BuildReturn<N>
+  }
 
   for (const konzolNodeIndex in ast) {
-    // DFS
     const konzolNode = ast[konzolNodeIndex]
     if (isTextExpression(konzolNode)) {
       resultFuncArgs.push(createString(konzolNode.value))
       continue
     }
     if (isVariableExpression(konzolNode)) {
-      // TODO: The order of functions is important
-      if (konzolNode.path.length === 0) { // "{}"
-        const modifiedArg = applyModifiers('$' + getVariableName(i++), konzolNode.modifiers)
-        resultFuncArgs.push(`${modifiedArg}`)
-        continue
-      }
-
-      const path = konzolNode.path.map((part) => {
-        if (isIdentifierSegment(part)) {
-          return part.name
-        } // else if (isNestedVariableSegment(part)) {
-        else if (isWildcardSegment(part)) {
-          return '*'
-        }
-        return ''
-      })
-      const tempVarName = '_' + getVariableName(i)
-      const varName = '$' + getVariableName(i)
-      const modifiedArg = applyModifiers(tempVarName, konzolNode.modifiers)
-      const findArgs = `${varName},${JSON.stringify(path)}`
-      resultFuncArgs.push(`(${tempVarName}=__kzl_find(${findArgs}),${modifiedArg})`)
-      i++
+      buildFromVariable(konzolNode, false)
     }
   }
 
   const args = new Array(variableCount).fill(0).map((_, i) => '$' + getVariableName(i)).join(',')
-  const declarations = ['v', ...new Array(variableCount).fill(0).map((_, i) => '_' + getVariableName(i))].join(',')
+  const declarations = new Array(variableCount).fill(0).map((_, i) => '_' + getVariableName(i)).join(',')
   const finalCode = createRoot({
-    body: resultFuncArgs.join(','), 
+    body: resultFuncArgs.join(','),
     args,
     declarations
   })
@@ -171,7 +184,22 @@ function parseModifier(input: string): Modifier | null {
 }
 
 function findVariableCount(formatAST: ParseResult) {
-  // TODO: Can have nested vars
-  return formatAST.filter(e => e.type === 'variable').length
+  function findNestedVariableCount(segs: PathSegment[], count = 0): number {
+    let layerTotal = count
+    for (const seg of segs) {
+      if (isNestedVariableSegment(seg)) {
+        layerTotal += 1 + findNestedVariableCount(seg.path)
+      }
+    }
+    return layerTotal
+  }
+
+  let total = 0
+  for (const node of formatAST) {
+    if (isVariableExpression(node)) {
+      total += 1 + findNestedVariableCount(node.path)
+    }
+  }
+  return total
 }
 
