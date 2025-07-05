@@ -1,4 +1,4 @@
-import type { KonzolOptions } from '../types/types'
+import type { Options } from '../types'
 import process from 'node:process'
 import MagicString from 'magic-string'
 import { SyntaxError as KonzolSyntaxError } from '../parser/parser'
@@ -9,7 +9,7 @@ import { charsToKB, logError, logLog, logRed, logSyntaxError, unwrap } from '../
 import { build } from './builder'
 import { vueLoader } from './loaders'
 
-export function transform(codeStr: string, id: string, options: KonzolOptions): { code: string, map: null } | { error: unknown } | void {
+export function transform(codeStr: string, id: string, options: Options): { code: string, map: null } | { error: unknown } | void {
   if (!/\.(?:ts|js|vue)$/.test(id))
     return
   if (!options || !options.entry)

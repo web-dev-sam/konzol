@@ -1,5 +1,5 @@
 import type { UnpluginFactory } from 'unplugin'
-import type { KonzolOptions } from './types/types'
+import type { Options } from './types'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -10,7 +10,7 @@ import { charsToKB, logLog } from './utils/utils'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
+export const unpluginFactory: UnpluginFactory<Options> = (options) => {
   const virtualModuleId = 'virtual:konzol'
   const resolvedVirtualModuleId = `\0${virtualModuleId}`
 
