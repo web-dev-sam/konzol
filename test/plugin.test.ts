@@ -1,6 +1,6 @@
 import { expect, it, describe, vi, beforeEach } from 'vitest'
 import { transform } from '../src/core/transform'
-import { run } from './utils/utils'
+import { expectError, expectToBeCalledWith, run } from './utils/utils'
 
 const RED = '\x1b[31m'
 const RESET = '\x1b[0m'
@@ -24,7 +24,7 @@ describe('Invalid plugin usage', () => {
         undefined!
       ) as any
     )
-    expect(error).toHaveBeenCalledWith(RED, expect.stringContaining('Konzol:'), RESET)
+    expectToBeCalledWith(error, 'error', 'Options are not provided')
   })
 
   it('should handle missing option fields', async () => {
@@ -34,7 +34,8 @@ describe('Invalid plugin usage', () => {
         {} as any
       ) as any
     )
-    expect(error).toHaveBeenCalledWith(RED, expect.stringContaining('Konzol:'), RESET)
+    
+    expectToBeCalledWith(error, 'error', 'Options are not provided')
   })
 
   it('should ignore non-supported files', async () => {

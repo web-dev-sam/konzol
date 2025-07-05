@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { expectResult } from './utils/utils';
+import { expectError, expectResult } from './utils/utils';
 
 
 vi.stubGlobal('console', {
@@ -32,12 +32,12 @@ describe('log! macro', () => {
 
     it('should extract array elements by index', async () => {
       await expectResult(`log!("Second item: {items.1}", ${JSON.stringify({ items: ['first', 'second', 'third'] })})`,
-        ["Second item: ", 'second'], { loadVirtual: true });
+        ["Second item: ", { 'items.1': 'second' }], { loadVirtual: true });
     });
 
     it('should handle non-existent paths gracefully', async () => {
       await expectResult(`log!("Missing: {b.c}", ${JSON.stringify({ a: 1 })})`,
-        ["Missing: ", undefined], { loadVirtual: true });
+        ["Missing: ", {}], { loadVirtual: true });
     });
   });
 
@@ -71,7 +71,7 @@ describe('log! macro', () => {
 
     it('should handle wildcard with empty collections', async () => {
       await expectResult(`log!("Empty: {empty.*}", ${JSON.stringify({ empty: {} })})`,
-        ["Empty: ", []], { loadVirtual: true });
+        ["Empty: ", {}], { loadVirtual: true });
     });
   });
 
@@ -291,7 +291,7 @@ describe('log! macro', () => {
   });
 
   describe('Real-world usage patterns', () => {
-    it('should handle API response processing like the example', async () => {
+    it('should handle API response processing', async () => {
       const users = [
         { id: 1, address: { geo: { lat: '40.7128' } } },
         { id: 2, address: { geo: { lat: '34.0522' } } },
@@ -301,12 +301,16 @@ describe('log! macro', () => {
       await expectResult(`log!("Original: {}", ${JSON.stringify(users)})`,
         ["Original: ", users], { loadVirtual: true });
       await expectResult(`log!("Latitudes: {*.address.geo.lat}", ${JSON.stringify(users)})`,
-        ["Latitudes: ", ['40.7128', '34.0522', '-33.8688']], { loadVirtual: true });
+        ["Latitudes: ", {
+          "0.address.geo.lat": "40.7128",
+          "1.address.geo.lat": "34.0522",
+          "2.address.geo.lat": "-33.8688",
+        }], { loadVirtual: true });
       await expectResult(`log!("Lat keys: {*.address.geo.lat:k}", ${JSON.stringify(users)})`,
-        ["Lat keys: ", [0, 1, 2]], { loadVirtual: true });
+        ["Lat keys: ", Object.keys(users).map(k => `${k}.address.geo.lat`)], { loadVirtual: true });
     });
 
-    it('should handle photo album analysis like the example', async () => {
+    it('should handle photo album analysis', async () => {
       const photos = [
         { albumId: 1, thumbnailUrl: 'thumb1.jpg' },
         { albumId: 1, thumbnailUrl: 'thumb2.jpg' },
@@ -333,7 +337,7 @@ describe('log! macro', () => {
       await expectResult(`log!("High sales count: {*.sales:gt<130>|count}", ${JSON.stringify(salesData)})`,
         ["High sales count: ", 2], { loadVirtual: true });
       await expectResult(`log!("Regions: {*.region:unique}", ${JSON.stringify(salesData)})`,
-        ["Regions: ", ['North', 'South']], { loadVirtual: true });
+        ["Regions: ", { "0.region": "North", "1.region": "South"}], { loadVirtual: true });
       await expectResult(`log!("Total sales: {*.sales:values}", ${JSON.stringify(salesData)})`,
         ["Total sales: ", [100, 150, 120, 180]], { loadVirtual: true });
     });
@@ -341,8 +345,8 @@ describe('log! macro', () => {
 
   describe('Edge cases and error handling', () => {
     it('should handle malformed templates gracefully', async () => {
-      await expectResult(`log!("Unclosed: {unclosed", ${JSON.stringify({})})`,
-        ["Unclosed: {unclosed"], { loadVirtual: true });
+      await expectError(`log!("Unclosed: {unclosed", {})`,
+        'Invalid formatter string', { loadVirtual: true });
     });
 
     it('should handle empty objects', async () => {
@@ -352,18 +356,18 @@ describe('log! macro', () => {
 
     it('should handle nested null values', async () => {
       await expectResult(`log!("User name: {user.name}", ${JSON.stringify({ user: null })})`,
-        ["User name: ", undefined], { loadVirtual: true });
+        ["User name: ", {}], { loadVirtual: true });
     });
 
     it('should handle circular references', async () => {
       // For circular references, we'll simulate what would happen
       await expectResult(`log!("Name: {name}", {name: 'test', self: '[Circular]'})`,
-        ["Name: ", 'test'], { loadVirtual: true });
+        ["Name: ", { name: 'test' }], { loadVirtual: true });
     });
 
     it('should handle undefined modifiers gracefully', async () => {
-      await expectResult(`log!("Invalid: {:invalidmod}", ${JSON.stringify([1, 2, 3])})`,
-        ["Invalid: ", '[object Object]'], { loadVirtual: true });
+      await expectResult(`log!("Invalid: {:invalidmod}", [1, 2, 3])`,
+        ["Invalid: ", [1, 2, 3]], { loadVirtual: true });
     });
 
     it('should handle modifier parameters', async () => {
@@ -386,13 +390,13 @@ describe('log! macro', () => {
       const largeArray = Array.from({ length: 10000 }, (_, i) => ({ id: i, value: i * 2 }));
       await expectResult(`log!("Large count: {:count}", ${JSON.stringify(largeArray)})`,
         ["Large count: ", 10000], { loadVirtual: true });
-      await expectResult(`log!("High values: {*.value:gt<15000>|count}", ${JSON.stringify(largeArray)})`,
+      await expectResult(`log!("High values: {*.value:gte<15000>|count}", ${JSON.stringify(largeArray)})`,
         ["High values: ", 2500], { loadVirtual: true });
     });
 
     it('should handle deeply nested objects', async () => {
       await expectResult(`log!("Deep value: {level1.level2.level3.value}", ${JSON.stringify({ level1: { level2: { level3: { value: 'deep' } } } })})`,
-        ["Deep value: ", 'deep'], { loadVirtual: true });
+        ["Deep value: ", { "level1.level2.level3.value": "deep" }], { loadVirtual: true });
     });
 
     it('should handle many modifiers', async () => {

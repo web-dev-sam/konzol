@@ -2,6 +2,7 @@ import { transform } from "../../src/core/transform"
 import fs from 'fs'
 import path from 'path'
 import { expect, vi } from "vitest"
+import { grayPrefixed, greenPrefixed, redPrefixed, yellowPrefixed } from "../../src/utils/utils"
 
 const virtualModule = fs.readFileSync(
   path.resolve(__dirname, '../../assets/virtual-module.min.js'),
@@ -37,17 +38,21 @@ export async function expectResult(code: string, expected: unknown[], options: R
 }
 
 
-type ErrorOptions = {
-  onlyServerSide?: boolean
-}
-export const RED = '\x1b[31m'
-export const RESET = '\x1b[0m'
-export async function expectError(code: string, expected: unknown[], options: RunOptions & ErrorOptions = {}) {
+export async function expectError(code: string, msg: string, options: RunOptions = {}) {
   const error = vi.mocked(console.error)
   await run(code, options)
-  // Vite error
-  expect(error).toHaveBeenCalledWith(RED, ...expected, RESET)
-  // Injected app error
-  if (!options.onlyServerSide)
-    expect(error).toHaveBeenCalledWith(RED, ...expected, RESET)
+  expectToBeCalledWith(error, 'error', msg)
+}
+
+export const RESET = '\x1b[0m'
+export function expectToBeCalledWith(mock: any, type: 'error' | 'warn' | 'success' | 'log', msg: string) {
+  expect(mock).toHaveBeenCalledWith(
+    expect.stringContaining({
+      error: redPrefixed(''),
+      warn: yellowPrefixed(''),
+      success: greenPrefixed(''),
+      log: grayPrefixed('')
+    }[type] + msg),
+    RESET
+  )
 }

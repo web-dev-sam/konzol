@@ -1,8 +1,10 @@
 import { casesBuilder } from "./builder"
 
+export const VALUES_ALIASES = ['v', 'values', 'value']
+export const KEYS_ALIASES = ['k', 'keys', 'key']
 export const operations = [
   {
-    alias: ['v', 'values', 'value'],
+    alias: VALUES_ALIASES,
     builder(str: string) {
       return casesBuilder(str, {
         arr: 'v',
@@ -16,7 +18,7 @@ export const operations = [
     },
   },
   {
-    alias: ['k', 'keys', 'key'],
+    alias: KEYS_ALIASES,
     builder(str: string) {
       return casesBuilder(str, {
         arr: `v.map((_,i)=>i)`,
@@ -132,12 +134,12 @@ export const operations = [
     builder(str: string) {
       return casesBuilder(str, {
         arr: `v.map(e=>+e)`,
-        map: `Object.fromEntries(Object.entries(v).map(([k,w])=>+w))`,
+        map: `Object.fromEntries(Object.entries(v).map(([k,w])=>[k,+w]))`,
         set: `[...v].map(e=>+e)`,
         null: `null`,
         num: `v`,
         str: `+v`,
-        else: `Object.fromEntries(Object.entries(v).map(([k,w])=>+w))`,
+        else: `Object.fromEntries(Object.entries(v).map(([k,w])=>[k,+w]))`,
       })
     },
   },

@@ -89,7 +89,7 @@ export function logSyntaxError(error: KonzolSyntaxError, id: string, code: strin
   const errorLine = (lines[start.line - 1] || '').replaceAll('`', '\\`')
   const pointer = `${' '.repeat(start.column - 1)}^`
 
-  const errorStr = `Konzol: Invalid formatter string found in ${id}\n"${errorLine}"\n ${pointer} ${message}\n`
+  const errorStr = `Invalid formatter string found in ${id}\n"${errorLine}"\n ${pointer} ${message}\n`
   logRed(errorStr)
   return createRoot({
     body: `console.error(\`${errorStr}\`)`,
@@ -97,34 +97,29 @@ export function logSyntaxError(error: KonzolSyntaxError, id: string, code: strin
   })
 }
 
+export const redPrefixed = (str: string) => `${getBrand()}\x1b[31m${str}`
 export function logRed(str: string, ...args: any[]): void {
-  const RED = '\x1b[31m'
-  const RESET = '\x1b[0m'
-  console.error(getBrand() + RED + str, RED, ...args, RESET)
+  console.error(redPrefixed(str), ...args, '\x1b[0m')
 }
 
+export const yellowPrefixed = (str: string) => `${getBrand()}\x1b[33m${str}`
 export function logWarn(str: string, ...args: any[]): void {
-  const YELLOW = '\x1b[33m'
-  const RESET = '\x1b[0m'
-  console.warn(getBrand() + YELLOW + str, YELLOW, ...args, RESET)
+  console.warn(yellowPrefixed(str), ...args, '\x1b[0m')
 }
 
+export const greenPrefixed = (str: string) => `${getBrand()}\x1b[32m${str}`
 export function logSuccess(str: string, ...args: any[]): void {
-  const GREEN = '\x1b[32m'
-  const RESET = '\x1b[0m'
-  console.info(getBrand() + GREEN + str, GREEN, ...args, RESET)
+  console.info(greenPrefixed(str), ...args, '\x1b[0m')
 }
 
+export const grayPrefixed = (str: string) => `${getBrand()}\x1b[90m${str}`
 export function logLog(str: string, ...args: any[]): void {
-  const GRAY = '\x1b[90m'
-  const RESET = '\x1b[0m'
-  console.info(getBrand() + GRAY + str, GRAY, ...args, RESET)
+  console.info(grayPrefixed(str), ...args, '\x1b[0m')
 }
 
+export const boldRedPrefixed = (str: string) => `${getBrand()}\x1b[1m\x1b[31m${str}`
 export function logError(str: string, ...args: any[]): void {
-  const BOLD_RED = '\x1b[1m\x1b[31m'
-  const RESET = '\x1b[0m'
-  console.error(getBrand() + BOLD_RED + str, BOLD_RED, ...args, RESET)
+  console.error(boldRedPrefixed(str), ...args, '\x1b[0m')
 }
 
 function getBrand(): string {

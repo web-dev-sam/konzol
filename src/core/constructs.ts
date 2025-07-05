@@ -6,7 +6,7 @@ type CreateRootOptions = {
   strategy?: 'log' | 'error'
 }
 export function createRoot({ body, args = '$', declarations = 'v', strategy = 'log' }: CreateRootOptions) {
-  return /*js*/`;(async (_,${args})=>{let ${declarations};console.${strategy}(${body})})`
+  return /*js*/`;(async(_,${args})=>{${!declarations ? '' : `let ${declarations};`}console.${strategy}(${body})})`
 }
 
 export function createString(content: string) {

@@ -529,9 +529,9 @@ const data = {
 
 
 
-
-log!('Analytics: {products}', data)
-log!('Analytics: {products.1}', data, data)
+log!("Unclosed: {unclosed", {})
+// log!('Analytics: {products}', data)
+// log!('Analytics: {products.1}', data, data)
 // log!('Found {:@floral|@summer|c} string that contain "floral" and "summer"', data)
 
 

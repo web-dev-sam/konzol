@@ -1,5 +1,5 @@
 import { expect, it, describe, vi, beforeEach } from 'vitest'
-import { expectError, expectResult, RED, RESET, run } from './utils/utils'
+import { expectError, expectResult, RESET, run } from './utils/utils'
 
 const dataUsers = fetch('https://jsonplaceholder.typicode.com/users').then((r) => r.json())
 
@@ -22,17 +22,17 @@ describe('Simple formatter syntax', () => {
   })
 
   it('should error when no arguments provided', async () => {
-    await expectError(`log!()`, [expect.stringContaining('Konzol: Call to')])
+    await expectError(`log!()`, 'Call to')
   })
 
   it('should error when first argument is not a string', async () => {
-    await expectError(`log!(42, 42)`, [expect.stringContaining('Konzol: First argument')])
+    await expectError(`log!(42, 42)`, 'First argument')
   })
 
   it('should log a plain string', async () => {
     const info = vi.mocked(console.info)
     await expectResult(`log!("42")`, ["42"])
-    expect(info).toHaveBeenCalledWith(expect.stringContaining('Konzol: Temporarily injected code size'))
+    expect(info).toBeCalledWith(expect.stringContaining('Hydrate macros'), RESET)
   })
 
   it('should log undefined when placeholder has no argument', async () => {
@@ -79,7 +79,7 @@ describe('Simple formatter syntax', () => {
   it('should extract simple object properties', async () => {
     await expectResult(
       'log!("Name: {name}", { name: "John", age: 30 })',
-      ['Name: ', { name: 'John' }],
+      ['Name: ', { name: 'John'}],
       { loadVirtual: true }
     );
   });
@@ -89,7 +89,7 @@ describe('Simple formatter syntax', () => {
   })
 
   it('should handle multiple placeholders with excessive arguments', async () => {
-    await expectError(`log!("{ }{}", 6, 9)`, [expect.stringContaining('Konzol: Invalid formatter string')])
+    await expectError(`log!("{ }{}", 6, 9)`, 'Invalid formatter string')
   })
 })
 
@@ -112,7 +112,7 @@ describe('Formatter with modifiers', () => {
   })
 
   it('complex modifiers', async () => {
-    await expectResult(`log!("{*.address.geo.lat}", [])`, [[]], { loadVirtual: true })
+    await expectResult(`log!("{*.address.geo.lat}", [])`, [{}], { loadVirtual: true })
   })
 })
 

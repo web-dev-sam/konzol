@@ -10,7 +10,7 @@ import {
   PathSegment,
   VariableExpression,
 } from '../utils/parser'
-import { aliases, Operation, operations } from './registry'
+import { aliases, KEYS_ALIASES, Operation, operations, VALUES_ALIASES } from './registry'
 import { babelTypes } from '../utils/babel'
 import { createRoot, createString } from './constructs'
 
@@ -91,9 +91,14 @@ export function casesBuilder(checkedVal: string, cases: SafeCasesMap) {
 
 function applyModifiers(expression: string, modifiers: FunctionExpression[] | null) {
   const modifierContents = modifiers?.map((modifier) => modifier.content)
-  if (!modifierContents || modifierContents.length === 0) {
+  if (!modifierContents) {
     return expression
   }
+
+  // By default use 'values' modifier for simpler output in simple cases (can be reverted by using keys modifier)
+  // if (VALUES_ALIASES.includes(modifierContents[0]) && KEYS_ALIASES.includes(modifierContents[0])) {
+  //   modifierContents.unshift(VALUES_ALIASES[0])
+  // }
 
   const operationMap: Record<string, Operation['builder']> = {}
   for (const operation of operations) {
