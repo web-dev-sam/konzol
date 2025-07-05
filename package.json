@@ -56,7 +56,8 @@
     "release": "bumpp && pnpm publish",
     "preview": "vite preview",
     "peggy": "peggy -o src/parser/parser.js --format es --dts src/parser/grammar.peggy",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "eslint ."
   },
   "peerDependencies": {
     "@farmfe/core": ">=1",
