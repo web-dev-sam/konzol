@@ -1,8 +1,7 @@
 {
   "name": "konzol",
   "type": "module",
-  "version": "0.1.0",
-  "private": true,
+  "version": "0.1.1-beta.1",
   "packageManager": "pnpm@10.11.0",
   "description": "An unplugin plugin to add a powerful logging macro to JS/TS thats 0 bytes in production.",
   "license": "MIT",
@@ -45,6 +44,7 @@
     }
   },
   "files": [
+    "assets",
     "dist"
   ],
   "scripts": {
