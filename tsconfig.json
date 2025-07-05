@@ -2,17 +2,17 @@
   "compilerOptions": {
     "tsBuildInfoFile": "./node_modules/.tmp/tsbuildinfo.json",
     "target": "ES2020",
-    "module": "ESNext", 
-    "moduleResolution": "bundler",
     "lib": ["ESNext"],
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
+    "rootDir": ".",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
     "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
     "declaration": true,
     "outDir": "./dist",
-    "rootDir": "."
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*", "test/**/*"],
   "exclude": ["node_modules", "dist"]

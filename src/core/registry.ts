@@ -1,4 +1,4 @@
-import { casesBuilder } from "./builder"
+import { casesBuilder } from './builder'
 
 export const VALUES_ALIASES = ['v', 'values', 'value']
 export const KEYS_ALIASES = ['k', 'keys', 'key']
@@ -43,7 +43,7 @@ export const operations = [
         str: `[...new Set(v.split(''))].join('')`,
         else: `Object.fromEntries(Object.entries(v).filter(([k,w],i,a)=>a.findIndex(([k2,w2])=>w2===w)===i))`,
       })
-    }
+    },
   },
   {
     alias: ['c', 'count', 'len', 'length'],
@@ -184,113 +184,112 @@ export const operations = [
         else: `Object.entries(v).map(o=>o[1]).reduce((a,b)=>isNaN(a+b)?0:a+b,0)`,
       })
     },
-  },{
-  alias: ['lower', 'lowercase'],
-  builder(str: string) {
-    return casesBuilder(str, {
-      arr: `v.map(e => typeof e === 'string' ? e.toLowerCase() : e)`,
-      map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.toLowerCase() : w]))`,
-      set: `new Set([...v].map(e => typeof e === 'string' ? e.toLowerCase() : e))`,
-      null: `null`,
-      num: `v`,
-      str: `v.toLowerCase()`,
-      else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.toLowerCase() : w]))`,
-    })
   },
-},
-{
-  alias: ['upper', 'uppercase'],
-  builder(str: string) {
-    return casesBuilder(str, {
-      arr: `v.map(e => typeof e === 'string' ? e.toUpperCase() : e)`,
-      map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.toUpperCase() : w]))`,
-      set: `new Set([...v].map(e => typeof e === 'string' ? e.toUpperCase() : e))`,
-      null: `null`,
-      num: `v`,
-      str: `v.toUpperCase()`,
-      else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.toUpperCase() : w]))`,
-    })
+  {
+    alias: ['lower', 'lowercase'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v.map(e => typeof e === 'string' ? e.toLowerCase() : e)`,
+        map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.toLowerCase() : w]))`,
+        set: `new Set([...v].map(e => typeof e === 'string' ? e.toLowerCase() : e))`,
+        null: `null`,
+        num: `v`,
+        str: `v.toLowerCase()`,
+        else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.toLowerCase() : w]))`,
+      })
+    },
   },
-},
-{
-  alias: ['snake', 'snake_case', '_'],
-  builder(str: string) {
-    return casesBuilder(str, {
-      arr: `v.map(e => typeof e === 'string' ? e.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase() : e)`,
-      map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase() : w]))`,
-      set: `new Set([...v].map(e => typeof e === 'string' ? e.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase() : e))`,
-      null: `null`,
-      num: `v`,
-      str: `v.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase()`,
-      else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase() : w]))`,
-    })
+  {
+    alias: ['upper', 'uppercase'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v.map(e => typeof e === 'string' ? e.toUpperCase() : e)`,
+        map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.toUpperCase() : w]))`,
+        set: `new Set([...v].map(e => typeof e === 'string' ? e.toUpperCase() : e))`,
+        null: `null`,
+        num: `v`,
+        str: `v.toUpperCase()`,
+        else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.toUpperCase() : w]))`,
+      })
+    },
   },
-},
-{
-  alias: ['kebab', 'kebab-case', '-'],
-  builder(str: string) {
-    return casesBuilder(str, {
-      arr: `v.map(e => typeof e === 'string' ? e.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase() : e)`,
-      map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase() : w]))`,
-      set: `new Set([...v].map(e => typeof e === 'string' ? e.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase() : e))`,
-      null: `null`,
-      num: `v`,
-      str: `v.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase()`,
-      else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase() : w]))`,
-    })
+  {
+    alias: ['snake', 'snake_case', '_'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v.map(e => typeof e === 'string' ? e.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase() : e)`,
+        map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase() : w]))`,
+        set: `new Set([...v].map(e => typeof e === 'string' ? e.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase() : e))`,
+        null: `null`,
+        num: `v`,
+        str: `v.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase()`,
+        else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/([a-z])([A-Z])/g, '$1_$2').replace(/[\s-]+/g, '_').toLowerCase() : w]))`,
+      })
+    },
   },
-},
-{
-  alias: ['camel', 'camelCase', 'cc'],
-  builder(str: string) {
-    return casesBuilder(str, {
-      arr: `v.map(e => typeof e === 'string' ? e.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '') : e)`,
-      map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '') : w]))`,
-      set: `new Set([...v].map(e => typeof e === 'string' ? e.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '') : e))`,
-      null: `null`,
-      num: `v`,
-      str: `v.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '')`,
-      else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '') : w]))`,
-    })
+  {
+    alias: ['kebab', 'kebab-case', '-'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v.map(e => typeof e === 'string' ? e.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase() : e)`,
+        map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase() : w]))`,
+        set: `new Set([...v].map(e => typeof e === 'string' ? e.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase() : e))`,
+        null: `null`,
+        num: `v`,
+        str: `v.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase()`,
+        else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/([a-z])([A-Z])/g, '$1-$2').replace(/[\s_]+/g, '-').toLowerCase() : w]))`,
+      })
+    },
   },
-},
-{
-  alias: ['capitalize', 'cap'],
-  builder(str: string) {
-    return casesBuilder(str, {
-      arr: `v.map(e => typeof e === 'string' ? e.charAt(0).toUpperCase() + e.slice(1).toLowerCase() : e)`,
-      map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w]))`,
-      set: `new Set([...v].map(e => typeof e === 'string' ? e.charAt(0).toUpperCase() + e.slice(1).toLowerCase() : e))`,
-      null: `null`,
-      num: `v`,
-      str: `v.charAt(0).toUpperCase() + v.slice(1).toLowerCase()`,
-      else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w]))`,
-    })
+  {
+    alias: ['camel', 'camelCase', 'cc'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v.map(e => typeof e === 'string' ? e.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '') : e)`,
+        map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '') : w]))`,
+        set: `new Set([...v].map(e => typeof e === 'string' ? e.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '') : e))`,
+        null: `null`,
+        num: `v`,
+        str: `v.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '')`,
+        else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.replace(/[-_\s]+(.)?/g, (_, c) => c ? c.toUpperCase() : '') : w]))`,
+      })
+    },
   },
-},
-{
-  alias: ['trim'],
-  builder(str: string) {
-    return casesBuilder(str, {
-      arr: `v.map(e => typeof e === 'string' ? e.trim() : e)`,
-      map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.trim() : w]))`,
-      set: `new Set([...v].map(e => typeof e === 'string' ? e.trim() : e))`,
-      null: `null`,
-      num: `v`,
-      str: `v.trim()`,
-      else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.trim() : w]))`,
-    })
+  {
+    alias: ['capitalize', 'cap'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v.map(e => typeof e === 'string' ? e.charAt(0).toUpperCase() + e.slice(1).toLowerCase() : e)`,
+        map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w]))`,
+        set: `new Set([...v].map(e => typeof e === 'string' ? e.charAt(0).toUpperCase() + e.slice(1).toLowerCase() : e))`,
+        null: `null`,
+        num: `v`,
+        str: `v.charAt(0).toUpperCase() + v.slice(1).toLowerCase()`,
+        else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.charAt(0).toUpperCase() + w.slice(1).toLowerCase() : w]))`,
+      })
+    },
   },
-}
+  {
+    alias: ['trim'],
+    builder(str: string) {
+      return casesBuilder(str, {
+        arr: `v.map(e => typeof e === 'string' ? e.trim() : e)`,
+        map: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.trim() : w]))`,
+        set: `new Set([...v].map(e => typeof e === 'string' ? e.trim() : e))`,
+        null: `null`,
+        num: `v`,
+        str: `v.trim()`,
+        else: `Object.fromEntries(Object.entries(v).map(([k,w]) => [k, typeof w === 'string' ? w.trim() : w]))`,
+      })
+    },
+  },
 ] satisfies Operation[]
 
-export const aliases = operations.flatMap((e) => e.alias)
-export type Operation = {
+export const aliases = operations.flatMap(e => e.alias)
+export interface Operation {
   alias: (string | ((s: string) => boolean))[]
   builder: (str: string, ...args: any[]) => string
 }
-
-
 
 // string coding chars
 // a-zA-Z0-9_

@@ -1,14 +1,14 @@
 import type { UnpluginFactory } from 'unplugin'
+import type { KonzolOptions } from './types/types'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { createUnplugin } from 'unplugin'
 import { transform } from './core/transform'
-import { fileURLToPath } from 'url'
-import fs from 'fs'
-import path from 'path'
-import { type KonzolOptions } from './types/types'
 import { charsToKB, logLog } from './utils/utils'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
   const virtualModuleId = 'virtual:konzol'
@@ -26,17 +26,17 @@ export const unpluginFactory: UnpluginFactory<KonzolOptions> = (options) => {
       if (id === resolvedVirtualModuleId) {
         const code = fs.readFileSync(
           path.resolve(__dirname, '../assets/virtual-module.min.js'),
-          'utf-8'
+          'utf-8',
         )
         logLog(`Add virtual module (${charsToKB(code.length)}KiB)`)
         return code
       }
     },
     transformInclude(id) {
-      return /\.(js|ts|jsx|tsx)$/.test(id) && !id.includes('node_modules')
+      return /\.(?:js|ts|jsx|tsx)$/.test(id) && !id.includes('node_modules')
     },
     transform(code, id) {
-      const usesGlobals = /(log!\()/.test(code)
+      const usesGlobals = /log!\(/.test(code)
       if (usesGlobals && !code.includes(virtualModuleId)) {
         const transformedCode = transform(code, id, options)
         if (transformedCode == null || 'error' in transformedCode) {

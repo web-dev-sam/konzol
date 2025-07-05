@@ -1,9 +1,6 @@
-import { expect, it, describe, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { transform } from '../src/core/transform'
-import { expectError, expectToBeCalledWith, run } from './utils/utils'
-
-const RED = '\x1b[31m'
-const RESET = '\x1b[0m'
+import { expectToBeCalledWith, run } from './utils/utils'
 
 vi.stubGlobal('console', {
   warn: vi.fn(),
@@ -12,44 +9,43 @@ vi.stubGlobal('console', {
   log: vi.fn(),
 })
 
-describe('Invalid plugin usage', () => {
+describe('invalid plugin usage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it('should handle missing plugin parameters', async () => {
     const error = vi.mocked(console.error)
+    // eslint-disable-next-line no-eval
     await eval(
-      transform('', 'main.ts',
-        undefined!
-      ) as any
+      transform('', 'main.ts', undefined!,
+      ) as any,
     )
     expectToBeCalledWith(error, 'error', 'Options are not provided')
   })
 
   it('should handle missing option fields', async () => {
     const error = vi.mocked(console.error)
+    // eslint-disable-next-line no-eval
     await eval(
-      transform('', 'main.ts',
-        {} as any
-      ) as any
+      transform('', 'main.ts', {} as any,
+      ) as any,
     )
-    
+
     expectToBeCalledWith(error, 'error', 'Options are not provided')
   })
 
   it('should ignore non-supported files', async () => {
+    // eslint-disable-next-line no-eval
     const result = await eval(
-      transform('', 'main.json',
-        {} as any
-      ) as any
+      transform('', 'main.json', {} as any,
+      ) as any,
     )?.error
     expect(result).toBe(undefined)
   })
 })
 
-
-describe('Loaders', () => {
+describe('loaders', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

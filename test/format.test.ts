@@ -1,7 +1,7 @@
-import { expect, it, describe, vi, beforeEach } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { expectError, expectResult, RESET, run } from './utils/utils'
 
-const dataUsers = fetch('https://jsonplaceholder.typicode.com/users').then((r) => r.json())
+const dataUsers = fetch('https://jsonplaceholder.typicode.com/users').then(r => r.json())
 
 vi.stubGlobal('console', {
   warn: vi.fn(),
@@ -10,7 +10,7 @@ vi.stubGlobal('console', {
   log: vi.fn(),
 })
 
-describe('Simple formatter syntax', () => {
+describe('simple formatter syntax', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -31,7 +31,7 @@ describe('Simple formatter syntax', () => {
 
   it('should log a plain string', async () => {
     const info = vi.mocked(console.info)
-    await expectResult(`log!("42")`, ["42"])
+    await expectResult(`log!("42")`, ['42'])
     expect(info).toBeCalledWith(expect.stringContaining('Hydrate macros'), RESET)
   })
 
@@ -68,33 +68,28 @@ describe('Simple formatter syntax', () => {
   })
 
   it('should handle simple placeholder replacement', async () => {
-    await expectResult(`log!("Hello {}", "World")`, ["Hello ", "World"]);
-  });
+    await expectResult(`log!("Hello {}", "World")`, ['Hello ', 'World'])
+  })
 
   it('should handle mixed types in placeholders', async () => {
-    await expectResult(`log!("Number: {}, String: {}, Boolean: {}", 42, "test", true)`,
-      ["Number: ", 42, ", String: ", "test", ", Boolean: ", true]);
-  });
+    await expectResult(`log!("Number: {}, String: {}, Boolean: {}", 42, "test", true)`, ['Number: ', 42, ', String: ', 'test', ', Boolean: ', true])
+  })
 
   it('should extract simple object properties', async () => {
     await expectResult(
       'log!("Name: {name}", { name: "John", age: 30 })',
-      ['Name: ', { name: 'John'}],
-      { loadVirtual: true }
-    );
-  });
-
-  it('should handle multiple placeholders with excessive arguments', async () => {
-    await expectResult(`log!("{}{}", 6, 9, 42)`, [6, 9])
+      ['Name: ', { name: 'John' }],
+      { loadVirtual: true },
+    )
   })
 
   it('should handle multiple placeholders with excessive arguments', async () => {
+    await expectResult(`log!("{}{}", 6, 9, 42)`, [6, 9])
     await expectError(`log!("{ }{}", 6, 9)`, 'Invalid formatter string')
   })
 })
 
-
-describe('Formatter with modifiers', () => {
+describe('formatter with modifiers', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -116,8 +111,7 @@ describe('Formatter with modifiers', () => {
   })
 })
 
-
-describe('Macro positioning', () => {
+describe('macro positioning', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

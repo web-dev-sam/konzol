@@ -7,6 +7,6 @@ export default defineConfig({
     Konzol({
       functionName: 'log!',
       entry: 'main.ts',
-    })
+    }),
   ],
 })

@@ -10,8 +10,8 @@ export default defineConfig({
         'assets/**',
         'dist/**',
         'src/vite.ts',
-        'src/index.ts'
-      ]
-    }
+        'src/index.ts',
+      ],
+    },
   },
 })

@@ -1,53 +1,59 @@
-import { getVariableName, logWarn } from '../utils/utils'
+import type { babelTypes } from '../utils/babel'
+import type {
+  FunctionExpression,
+  ParseResult,
+  PathSegment,
+  VariableExpression,
+} from '../utils/parser'
+import type { Operation } from './registry'
 import {
-  type FunctionExpression,
-  type ParseResult,
+
   isIdentifierSegment,
   isNestedVariableSegment,
   isTextExpression,
   isVariableExpression,
   isWildcardSegment,
-  PathSegment,
-  VariableExpression,
 } from '../utils/parser'
-import { aliases, KEYS_ALIASES, Operation, operations, VALUES_ALIASES } from './registry'
-import { babelTypes } from '../utils/babel'
+import { getVariableName, logWarn } from '../utils/utils'
 import { createRoot, createString } from './constructs'
+import { aliases, operations } from './registry'
 
-export function build(ast: ParseResult, callExpression: babelTypes.CallExpression) {
+export function build(ast: ParseResult, callExpression: babelTypes.CallExpression): string {
   const formatVariableCount = findVariableCount(ast)
   const providedVariableCount = callExpression.arguments.length - 1
   const variableCount = Math.max(formatVariableCount, providedVariableCount)
 
-  let resultFuncArgs: string[] = []
+  const resultFuncArgs: string[] = []
   let i = -1
   type BuildReturn<N extends boolean> = N extends true ? string : null
   const buildFromVariable = <N extends boolean>(
-    node: VariableExpression, 
-    nested: N
+    node: VariableExpression,
+    nested: N,
   ): BuildReturn<N> => {
     const varBaseName = getVariableName(++i)
-    const tempVarName = '_' + varBaseName
-    const varName = '$' + varBaseName
+    const tempVarName = `_${varBaseName}`
+    const varName = `$${varBaseName}`
     if (nested) {
       logWarn('Nested expressions not supported!')
       return `*` as BuildReturn<N>
     }
-    
+
     if (node.path.length === 0) { // "{}" "{:count}"
       resultFuncArgs.push(applyModifiers(varName, node.modifiers))
       return null as BuildReturn<N>
     }
 
     const path = node.path.map((part) => {
-      if (isIdentifierSegment(part)) return part.name
+      if (isIdentifierSegment(part))
+        return part.name
       if (isNestedVariableSegment(part)) {
         return buildFromVariable(part, true)
       }
-      if (isWildcardSegment(part)) return '*'
+      if (isWildcardSegment(part))
+        return '*'
       return ''
     })
-    
+
     const result = applyModifiers(tempVarName, node.modifiers)
     const findArgs = `${varName},${JSON.stringify(path)}`
     resultFuncArgs.push(`(${tempVarName}=__kzl_find(${findArgs}),${result})`)
@@ -65,12 +71,12 @@ export function build(ast: ParseResult, callExpression: babelTypes.CallExpressio
     }
   }
 
-  const args = new Array(variableCount).fill(0).map((_, i) => '$' + getVariableName(i)).join(',')
-  const declarations = new Array(variableCount).fill(0).map((_, i) => '_' + getVariableName(i)).join(',')
+  const args = Array.from({ length: variableCount }).map((_, i) => `$${getVariableName(i)}`).join(',')
+  const declarations = Array.from({ length: variableCount }).map((_, i) => `_${getVariableName(i)}`).join(',')
   const finalCode = createRoot({
     body: resultFuncArgs.join(','),
     args,
-    declarations
+    declarations,
   })
   return finalCode
 }
@@ -79,26 +85,21 @@ type HandledType = 'null' | 'arr' | 'map' | 'set' | 'num' | 'str' | 'else'
 type SafeCasesMap = {
   [K in HandledType]: string
 }
-export function casesBuilder(checkedVal: string, cases: SafeCasesMap) {
+export function casesBuilder(checkedVal: string, cases: SafeCasesMap): string {
   return (
-    `await __kzl_cases(${checkedVal},{` +
-    Object.entries(cases)
-      .map(([prim, code]) => `${prim}:async v=>${code}`)
-      .join(',') +
-    `})`
+    `await __kzl_cases(${checkedVal},{${
+      Object.entries(cases)
+        .map(([prim, code]) => `${prim}:async v=>${code}`)
+        .join(',')
+    }})`
   )
 }
 
-function applyModifiers(expression: string, modifiers: FunctionExpression[] | null) {
-  const modifierContents = modifiers?.map((modifier) => modifier.content)
+function applyModifiers(expression: string, modifiers: FunctionExpression[] | null): string {
+  const modifierContents = modifiers?.map(modifier => modifier.content)
   if (!modifierContents) {
     return expression
   }
-
-  // By default use 'values' modifier for simpler output in simple cases (can be reverted by using keys modifier)
-  // if (VALUES_ALIASES.includes(modifierContents[0]) && KEYS_ALIASES.includes(modifierContents[0])) {
-  //   modifierContents.unshift(VALUES_ALIASES[0])
-  // }
 
   const operationMap: Record<string, Operation['builder']> = {}
   for (const operation of operations) {
@@ -111,7 +112,8 @@ function applyModifiers(expression: string, modifiers: FunctionExpression[] | nu
   let result = expression
   for (const modifier of modifierContents) {
     const maybeModifier = parseModifier(modifier)
-    if (!maybeModifier) continue
+    if (!maybeModifier)
+      continue
 
     const { prefix, args } = maybeModifier
     let operation = operationMap[prefix]
@@ -127,12 +129,12 @@ function applyModifiers(expression: string, modifiers: FunctionExpression[] | nu
   return result
 }
 
-type Modifier = {
+interface Modifier {
   prefix: string
   args: (string | number | boolean | null | undefined)[]
 }
 function parseModifier(input: string): Modifier | null {
-  const pattern = /^(.+?)(?:<([^>]*)>)?$/
+  const pattern = /^([^<]*)(?:<([^>]*)>)?$/
   const match = input.match(pattern)
   if (!match) {
     console.warn(`Invalid modifier format: ${input}\nExpected format: "modifier<arg1, arg2, ...>" or "modifier"`)
@@ -173,9 +175,9 @@ function parseModifier(input: string): Modifier | null {
       return false // func<0, false> -->   [0, false]
     }
     if (
-      (part.startsWith('"') && part.endsWith('"')) ||
-      (part.startsWith("'") && part.endsWith("'")) ||
-      (part.startsWith('`') && part.endsWith('`'))
+      (part.startsWith('"') && part.endsWith('"'))
+      || (part.startsWith('\'') && part.endsWith('\''))
+      || (part.startsWith('`') && part.endsWith('`'))
     ) {
       const normalizedPart = createString(part.slice(1, -1))
       return `\`${normalizedPart}` // func<0, "idk`whatever lol 😂"> -->   [0, `idk\`whatever lol 😂`]
@@ -188,7 +190,7 @@ function parseModifier(input: string): Modifier | null {
   return { prefix: prefix.trim(), args }
 }
 
-function findVariableCount(formatAST: ParseResult) {
+function findVariableCount(formatAST: ParseResult): number {
   function findNestedVariableCount(segs: PathSegment[], count = 0): number {
     let layerTotal = count
     for (const seg of segs) {
@@ -207,4 +209,3 @@ function findVariableCount(formatAST: ParseResult) {
   }
   return total
 }
-

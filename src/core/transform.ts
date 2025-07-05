@@ -1,32 +1,36 @@
+import type { KonzolOptions } from '../types/types'
+import process from 'node:process'
 import MagicString from 'magic-string'
 import { SyntaxError as KonzolSyntaxError } from '../parser/parser'
-import { getAllCallExpressions, babelTypes, isExpectedCall, isNestedMacro } from '../utils/babel'
+import { babelTypes, getAllCallExpressions, isExpectedCall, isNestedMacro } from '../utils/babel'
 import { konzolParse } from '../utils/parser'
-import { logError, logRed, logLog, logSyntaxError, unwrap, charsToKB } from '../utils/utils'
-import { build } from './builder'
-import { type KonzolOptions } from '../types/types'
-import { vueLoader } from './loaders'
 import { overwrite } from '../utils/string'
+import { charsToKB, logError, logLog, logRed, logSyntaxError, unwrap } from '../utils/utils'
+import { build } from './builder'
+import { vueLoader } from './loaders'
 
-
-export function transform(codeStr: string, id: string, options: KonzolOptions): { code: string; map: null } | { error: unknown } | void {
-  if (!/\.(ts|js|vue)$/.test(id)) return
+export function transform(codeStr: string, id: string, options: KonzolOptions): { code: string, map: null } | { error: unknown } | void {
+  if (!/\.(?:ts|js|vue)$/.test(id))
+    return
   if (!options || !options.entry)
     return logRed(`Options are not provided for the plugin.`)
 
   // Load .vue files
   if (id.endsWith('.vue')) {
     const result = vueLoader(codeStr, id)
-    if (result == null) return
+    if (result == null)
+      return
     codeStr = result
   }
-  
+
   const macroName = options.functionName?.trim() || 'log!'
   const expressions = getAllCallExpressions(codeStr, macroName)
   const nestedMacroExpressions = expressions.filter(e => isNestedMacro(expressions, e))
   for (const callExpression of nestedMacroExpressions) {
-    const expStart = callExpression.start, expEnd = callExpression.end
-    const fileLine = callExpression.loc?.start.line, fileCol = callExpression.loc?.start.column
+    const expStart = callExpression.start
+    const expEnd = callExpression.end
+    const fileLine = callExpression.loc?.start.line
+    const fileCol = callExpression.loc?.start.column
     const link = [id, fileLine, fileCol].filter(Boolean).join(':')
     if (expStart == null || expEnd == null) {
       logError(`Found AST node without start or end position at ${link}. Skipping transformation.`)
@@ -40,8 +44,10 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
   const codeSizes: number[] = []
   let hasReplacement = false
   for (const callExpression of validExpressions) {
-    const expStart = callExpression.start, expEnd = callExpression.end
-    const fileLine = callExpression.loc?.start.line, fileCol = callExpression.loc?.start.column
+    const expStart = callExpression.start
+    const expEnd = callExpression.end
+    const fileLine = callExpression.loc?.start.line
+    const fileCol = callExpression.loc?.start.column
     const link = [id, fileLine, fileCol].filter(Boolean).join(':')
     if (expStart == null || expEnd == null) {
       logError(`Found AST node without start or end position at ${link}. Skipping transformation.`)
@@ -50,14 +56,15 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
 
     const startOffset = expStart
     const endOffset = expEnd
-    const stripCode = () => {
+    const stripCode = (): void => {
       code.overwrite(startOffset, endOffset, `;`)
       hasReplacement = true
     }
 
     // Find expression
     const foundExpectedCall = isExpectedCall(callExpression, macroName)
-    if (!foundExpectedCall) continue
+    if (!foundExpectedCall)
+      continue
 
     // Handle found expression
     if (process.env.NODE_ENV === 'production') {
@@ -92,7 +99,8 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
         const loggingCode = logSyntaxError(formatAST, id, format)
         const newCode = code
           .slice(startOffset, endOffset)
-          .replace(macroName, loggingCode).toString()
+          .replace(macroName, loggingCode)
+          .toString()
         code.overwrite(startOffset, endOffset, newCode)
         hasReplacement = true
       }
@@ -101,14 +109,13 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
     const finalCode = build(formatAST, callExpression)
     codeSizes.push(finalCode.length)
 
-    code.overwrite(startOffset, endOffset,
-      code.slice(startOffset, endOffset)
-        .replace(macroName, finalCode)
-        .toString()
-    )
+    code.overwrite(startOffset, endOffset, code.slice(startOffset, endOffset)
+      .replace(macroName, finalCode)
+      .toString())
     hasReplacement = true
   }
-  if (!hasReplacement) return
+  if (!hasReplacement)
+    return
 
   logLog(`Hydrate macros (${charsToKB(codeSizes.reduce((a, b) => a + b, 0))}KiB)`)
   return {
@@ -116,4 +123,3 @@ export function transform(codeStr: string, id: string, options: KonzolOptions): 
     map: null,
   }
 }
-
