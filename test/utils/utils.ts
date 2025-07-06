@@ -1,8 +1,9 @@
+import type { Options } from '../../src/types'
 import fs from 'node:fs'
 import path from 'node:path'
 import { expect, vi } from 'vitest'
 import { transform } from '../../src/core/transform'
-import { grayPrefixed, greenPrefixed, redPrefixed, yellowPrefixed } from '../../src/utils/utils'
+import { boldRedPrefixed, grayPrefixed, greenPrefixed, yellowPrefixed } from '../../src/utils/utils'
 
 const virtualModule = fs.readFileSync(
   path.resolve(__dirname, '../../assets/virtual-module.min.js'),
@@ -17,10 +18,10 @@ interface RunOptions {
 export async function run(code: string, {
   id = 'main.ts',
   loadVirtual = false,
-}: RunOptions = {}): Promise<unknown> {
+}: RunOptions = {}, options: Partial<Options> = {}): Promise<unknown> {
   const transformedCode = (transform(code, id, {
-    functionName: 'log!',
-    entry: 'src/tests/dev/main.ts',
+    macroName: 'log!',
+    ...options,
   }) as any)?.code
   try {
     // eslint-disable-next-line no-eval
@@ -37,21 +38,23 @@ export async function expectResult(code: string, expected: unknown[], options: R
   expect(log).toHaveBeenCalledWith(...expected)
 }
 
-export async function expectError(code: string, msg: string, options: RunOptions = {}): Promise<void> {
+export async function expectError(code: string, msg: string, runOptions: RunOptions = {}, pluginOptions: Options = {}): Promise<void> {
   const error = vi.mocked(console.error)
-  await run(code, options)
+  await run(code, runOptions, pluginOptions)
   expectToBeCalledWith(error, 'error', msg)
 }
 
 export const RESET = '\x1B[0m'
 export function expectToBeCalledWith(mock: any, type: 'error' | 'warn' | 'success' | 'log', msg: string): void {
+  const prefixes = {
+    error: boldRedPrefixed(msg),
+    warn: yellowPrefixed(msg),
+    success: greenPrefixed(msg),
+    log: grayPrefixed(msg),
+  }
+
   expect(mock).toHaveBeenCalledWith(
-    expect.stringContaining({
-      error: redPrefixed(''),
-      warn: yellowPrefixed(''),
-      success: greenPrefixed(''),
-      log: grayPrefixed(''),
-    }[type] + msg),
+    expect.stringContaining(prefixes[type]),
     RESET,
   )
 }
