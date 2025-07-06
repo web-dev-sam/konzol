@@ -16,6 +16,31 @@ A zero-runtime, compile-time logging macro for JavaScript and TypeScript. Add po
 - Logs are stripped from production bundles
 - Works with Vite, Rollup, Webpack, and more (Currently only tested with Vite)
 
+## Installation
+
+```sh
+pnpm add -D konzol@latest
+# or
+npm i -D konzol@latest
+```
+
+```ts
+// vite.config.ts
+import { defineConfig } from 'vite';
+import Konzol from 'konzol/vite';
+
+export default defineConfig({
+  plugins: [
+    Konzol()
+  ],
+})
+
+// konzol.d.ts (Soon this is no longer needed)
+declare function log(format: string, ...args: unknown[]): void
+```
+
+See the playground and tests for more advanced patterns! Docs are in the making...
+
 ## Example Usage
 
 ```ts
@@ -47,33 +72,6 @@ log!("Theme: {settings.theme:@dark}", profile) // Anything in profile.settings.t
 ## 0 Bytes in Production
 
 All `log!` macros are removed at build time. No code is shipped to production, ensuring zero runtime cost.
-
-## Installation
-
-```sh
-pnpm add -D konzol@latest
-# or
-npm i -D konzol@latest
-```
-
-## Usage
-
-```ts
-// vite.config.ts
-import { defineConfig } from 'vite';
-import Konzol from 'konzol/vite';
-
-export default defineConfig({
-  plugins: [
-    Konzol()
-  ],
-})
-
-// konzol.d.ts (Soon this is no longer needed)
-declare function log(format: string, ...args: unknown[]): void
-```
-
-See the playground and tests for more advanced patterns! Docs are coming soon.
 
 ## License
 MIT License © 2025-PRESENT Samuel Braun
