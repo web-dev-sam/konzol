@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { find } from '../scripts/macros'
+import { find } from '../src/scripts/macros'
 
 describe('find function', () => {
   describe('basic object traversal', () => {
