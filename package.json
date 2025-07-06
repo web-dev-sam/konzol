@@ -4,6 +4,14 @@
   "version": "0.1.1-beta.2",
   "packageManager": "pnpm@10.11.0",
   "description": "An unplugin plugin to add a powerful logging macro to JS/TS thats 0 bytes in production.",
+  "author": {
+    "name": "Samuel Braun",
+    "email": "sam@webry.com",
+    "url": "https://github.com/web-dev-sam"
+  },
+  "devEngines": {
+    "node": ">=22"
+  },
   "license": "MIT",
   "homepage": "https://github.com/web-dev-sam/konsol",
   "repository": {
@@ -50,7 +58,7 @@
   "scripts": {
     "play": "cd playground && pnpm dev",
     "dev": "tsdown -w",
-    "build:virtual": "node --experimental-strip-types scripts/macros.ts",
+    "build:virtual": "node --experimental-strip-types src/scripts/macros.ts",
     "build": "pnpm build:virtual && tsc -b && tsdown",
     "prepublishOnly": "pnpm run build",
     "release": "bumpp && pnpm publish",
