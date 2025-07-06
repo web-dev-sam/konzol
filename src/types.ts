@@ -1,7 +1,8 @@
 export interface Options {
-  functionName?: string
   /**
-   * The entry point in which global helpers are defined.
+   * The name of the macro. Defaults to `log!`.
+   * If youre using JS, you can't use `!` in the name.
+   * In that case, use `log` or something similar.
    */
-  entry: string
+  macroName?: string
 }
