@@ -18,7 +18,7 @@ function isObject(value: unknown): value is Record<PropertyKey, unknown> {
   return typeof value === 'object' && value !== null
 }
 
-export function unproxify(obj: unknown): UnproxifiedResult | undefined {
+function _unproxify(obj: unknown): UnproxifiedResult | undefined {
   if (obj == null)
     return undefined
 
@@ -98,16 +98,11 @@ export function logSyntaxError(error: KonzolSyntaxError, id: string, code: strin
   const pointer = `${' '.repeat(start.column - 1)}^`
 
   const errorStr = `Invalid formatter string found in ${id}\n"${errorLine}"\n ${pointer} ${message}\n`
-  logRed(errorStr)
+  logError(errorStr)
   return createRoot({
     body: `\`${errorStr}\``,
     strategy: 'error',
   })
-}
-
-export const redPrefixed = (str: string): string => `${getBrand()}\x1B[31m${str}`
-export function logRed(str: string, ...args: any[]): void {
-  console.error(redPrefixed(str), ...args, '\x1B[0m')
 }
 
 export const yellowPrefixed = (str: string): string => `${getBrand()}\x1B[33m${str}`
