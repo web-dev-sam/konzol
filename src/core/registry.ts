@@ -325,7 +325,7 @@ export interface Operation {
 // Syntax:
 // RootExpression:     `{VariableExpression:ModifierExpression}`
 // ModifierExpression: `(FunctionExpression)` or `(FunctionExpression|FunctionExpression)`
-// FunctionExpression: `FunctionName` or `FunctionName(ArgumentList)` or `Shorthand`
+// FunctionExpression: `macroName` or `macroName(ArgumentList)` or `Shorthand`
 // ArgumentList:      `Argument` or `Argument, Argument` or `Argument, Argument, ...`
 // Shorthand:         `(anything here ...)` or `@search` or `@.search` or `@@search` or `@@%regex%`
 //                    or `?` or `<5` or `>5` or `^12` or `#^12` or ...
