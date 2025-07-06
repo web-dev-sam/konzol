@@ -30,6 +30,8 @@ import Konzol from 'konzol/vite';
 export default defineConfig({
   plugins: [
     Konzol()
+    // Use a custom macro name if needed
+    Konzol({ macroName: 'logger' }) // logger("Hello, world!")
   ],
 })
 
