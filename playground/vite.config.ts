@@ -6,9 +6,6 @@ import Unplugin from '../src/vite'
 export default defineConfig({
   plugins: [
     Inspect(),
-    Unplugin({
-      functionName: 'log!',
-      entry: 'main.ts',
-    }),
+    Unplugin(),
   ],
 })
