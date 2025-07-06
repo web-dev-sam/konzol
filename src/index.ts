@@ -10,7 +10,7 @@ import { charsToKB, logLog } from './utils/utils'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-export const unpluginFactory: UnpluginFactory<Options> = (options) => {
+export const unpluginFactory: UnpluginFactory<Options | undefined> = (options) => {
   const virtualModuleId = 'virtual:konzol'
   const resolvedVirtualModuleId = `\0${virtualModuleId}`
 
@@ -33,11 +33,10 @@ export const unpluginFactory: UnpluginFactory<Options> = (options) => {
       }
     },
     transformInclude(id) {
-      return /\.(?:js|ts|jsx|tsx)$/.test(id) && !id.includes('node_modules')
+      return /\.(?:ts|js|tsx|jsx|vue)$/.test(id) && !id.includes('node_modules')
     },
     transform(code, id) {
-      const usesGlobals = /log!\(/.test(code)
-      if (usesGlobals && !code.includes(virtualModuleId)) {
+      if (!code.includes(virtualModuleId)) {
         const transformedCode = transform(code, id, options)
         if (transformedCode == null || 'error' in transformedCode) {
           return
