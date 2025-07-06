@@ -1,10 +1,8 @@
 # unplugin-konzol [![npm](https://img.shields.io/npm/v/konzol.svg)](https://npmjs.com/package/unplugin-macros) [![Unit Tests](https://github.com/web-dev-sam/konzol/actions/workflows/ci.yml/badge.svg)](https://github.com/web-dev-sam/konzol/actions/workflows/ci.yml)
 &nbsp;
-<center>
-<img src="https://raw.githubusercontent.com/web-dev-sam/konzol/9adc7003011a194caaf4495290de485a16dd5e47/docs/logo.svg" height="100">
-</center>
-&nbsp;
-
+<p align="center">
+<img src="https://raw.githubusercontent.com/web-dev-sam/konzol/9adc7003011a194caaf4495290de485a16dd5e47/docs/logo.svg" width="100">
+</p>
 &nbsp;
 
 A zero-runtime, compile-time logging macro for JavaScript and TypeScript. Add powerful, expressive logs to your code that are automatically removed in production builds (0 bytes shipped!).
