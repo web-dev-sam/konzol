@@ -8,7 +8,7 @@ export default antfu({
       allow: ['log', 'info', 'warn', 'error'],
     }],
   },
-  ignores: ['./src/parser', './assets', './dist'],
+  ignores: ['./src/parser', './assets', './dist', './README.md'],
 }, {
   files: ['**/*.ts'],
   languageOptions: {
