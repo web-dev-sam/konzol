@@ -14,6 +14,15 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*", "test/**/*", "playground/**/*", "./tsdown.config.ts", "./vitest.config.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "src/**/*",
+    "test/**/*",
+    "playground/**/*",
+    "./tsdown.config.ts",
+    "./vitest.config.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
